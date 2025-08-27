@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "flocka-app",
+    "expo.displayName": "Flocka",
     "slug": "flocka-app",
     "version": "1.0.0",
     "orientation": "portrait",

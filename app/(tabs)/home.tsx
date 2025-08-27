@@ -5,11 +5,13 @@ import {
   FlatList,
   TouchableOpacity,
   ListRenderItem,
-  Image
+  Image,
+  Pressable
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import Entypo from '@expo/vector-icons/Entypo';
+import { router } from "expo-router";
 
 // データ型
 type ItemData = {
@@ -80,7 +82,9 @@ export default function Home() {
         </View>
       </View>
       <View className="flex-row items-center mb-4">
-        <Entypo name="plus" size={24} color="black" className="mx-4" />
+        <Pressable onPress={() => router.navigate('/create-card')}>
+          <Entypo name="plus" size={24} color="black" className="mx-4" />
+        </Pressable>
         <FlatList
           className="max-h-60"
           data={DATA}

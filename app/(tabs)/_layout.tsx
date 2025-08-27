@@ -43,6 +43,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="debug"
+        options={{
+          title: 'デバッグ',
+          tabBarIcon: ({ color }) => <AntDesign name="tool" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="my-page"
         options={{
           title: 'マイページ',

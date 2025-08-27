@@ -4,9 +4,9 @@ import { Pressable, Text, View } from "react-native";
 export default function SignUp() {
   return (
     <View className="flex-1 items-center justify-center ">
-      <Pressable onPress={()=>router.navigate('/sign-up-auth')}>
+      <Pressable onPress={()=>router.navigate('/home')}>
         <Text className="text-xl font-bold">
-          新規登録
+          ホームへ
         </Text>
       </Pressable>
     </View>

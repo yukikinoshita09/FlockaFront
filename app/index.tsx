@@ -1,8 +1,36 @@
+import { useAuth } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
-import { Pressable, Text, View, Image} from "react-native";
+import { useEffect } from 'react';
+import { ActivityIndicator, Image, Pressable, Text, View } from "react-native";
 import "../global.css";
 
 export default function HomeScreen() {
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (isAuthenticated && user) {
+        if (user.email_verified) {
+          // メール認証済みの場合はホーム画面へ
+          router.replace('/(tabs)/home');
+        } else {
+          // メール認証が未完了の場合は認証画面へ
+          router.replace('/sign-up-auth');
+        }
+      }
+    }
+  }, [isAuthenticated, isLoading, user]);
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#000000" />
+        <Text className="mt-4 text-lg">読み込み中...</Text>
+      </View>
+    );
+  }
+
+  // 未認証の場合はスタート画面を表示
   return (
     <View className="flex-1 items-center justify-center ">
       <Image source={require("../assets/images/start-app-icon.png")} 

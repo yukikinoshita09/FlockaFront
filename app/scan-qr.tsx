@@ -1,4 +1,5 @@
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Button, Text, View } from 'react-native';
 
@@ -28,7 +29,9 @@ export default function ScanQr() {
           barcodeTypes: ['qr'],
         }}
         onBarcodeScanned={({ data }) => {
-          console.log(data);
+          console.log('QR Code scanned:', data);
+          // ホーム画面に戻る
+          router.replace('/(tabs)/home');
         }}
       />
     </View>

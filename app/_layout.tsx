@@ -25,7 +25,14 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
+        <Stack
+          screenOptions={{
+            headerTitle: 'Flocka',
+            headerStyle: { backgroundColor: "#f8f8f8" },
+            headerTintColor: "#333",
+            headerTitleStyle: { fontWeight: "bold" },
+          }}
+        >
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="sign-in" options={{ headerShown: false }} />
           <Stack.Screen name="sign-up" options={{ headerShown: false }} />

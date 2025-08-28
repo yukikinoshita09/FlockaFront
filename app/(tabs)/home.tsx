@@ -1,8 +1,8 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -11,6 +11,7 @@ import {
   Image,
   ListRenderItem,
   Pressable,
+  RefreshControl,
   SafeAreaView,
   ScrollView,
   Text,
@@ -154,6 +155,7 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [cards, setCards] = useState<ItemData[]>([{ id: "add", type: "add" }]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [qrValue, setQrValue] = useState<string>("Hello, QR Code!");
   const [isGeneratingQR, setIsGeneratingQR] = useState<boolean>(false);
 
@@ -177,10 +179,32 @@ export default function Home() {
     return index * itemWidth;
   });
 
-  // 名刺データを取得
-  const fetchCards = async () => {
+  // QRコードを生成
+  const generateQRCode = useCallback(async (cardId: string) => {
+    if (!cardId || cardId === "add") return;
+    
     try {
-      setIsLoading(true);
+      setIsGeneratingQR(true);
+      const qrData = await apiClient.generateQRCode(cardId);
+      setQrValue(qrData.qrData);
+    } catch (error) {
+      console.error('Failed to generate QR code:', error);
+      Alert.alert(
+        "QRコード生成エラー",
+        "QRコードの生成に失敗しました。再度お試しください。",
+        [{ text: "OK", style: "default" }]
+      );
+    } finally {
+      setIsGeneratingQR(false);
+    }
+  }, []);
+
+  // 名刺データを取得
+  const fetchCards = useCallback(async (isRefresh: boolean = false) => {
+    try {
+      if (!isRefresh) {
+        setIsLoading(true);
+      }
       const apiCards = await apiClient.getMyCards();
       
       // 追加ボタン + APIから取得した名刺
@@ -200,7 +224,9 @@ export default function Home() {
         const firstCardId = apiCards[0].id;
         setSelectedId(firstCardId);
         // 初期名刺のQRコードを生成
-        setTimeout(() => generateQRCode(firstCardId), 100);
+        if (!isRefresh) {
+          setTimeout(() => generateQRCode(firstCardId), 100);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch cards:', error);
@@ -210,8 +236,17 @@ export default function Home() {
         [{ text: "OK", style: "default" }]
       );
     } finally {
-      setIsLoading(false);
+      if (!isRefresh) {
+        setIsLoading(false);
+      }
     }
+  }, [generateQRCode]);
+
+  // プルトゥリフレッシュの処理
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchCards(true);
+    setRefreshing(false);
   };
 
   // 初回ロード時に名刺を取得
@@ -219,32 +254,22 @@ export default function Home() {
     fetchCards();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // QRコードを生成
-  const generateQRCode = async (cardId: string) => {
-    if (!cardId || cardId === "add") return;
-    
-    try {
-      setIsGeneratingQR(true);
-      const qrData = await apiClient.generateQRCode(cardId);
-      setQrValue(qrData.qrData);
-    } catch (error) {
-      console.error('Failed to generate QR code:', error);
-      Alert.alert(
-        "QRコード生成エラー",
-        "QRコードの生成に失敗しました。再度お試しください。",
-        [{ text: "OK", style: "default" }]
-      );
-    } finally {
-      setIsGeneratingQR(false);
-    }
-  };
+  // 画面がフォーカスされた時にデータを更新（編集から戻った時など）
+  useFocusEffect(
+    useCallback(() => {
+      // 初回ロード後の場合のみリフレッシュ
+      if (!isLoading) {
+        fetchCards();
+      }
+    }, [isLoading, fetchCards])
+  );
 
   // 名刺選択時にQRコードを更新
   useEffect(() => {
     if (selectedId && selectedId !== "add") {
       generateQRCode(selectedId);
     }
-  }, [selectedId]);
+  }, [selectedId, generateQRCode]);
 
   const renderItem: ListRenderItem<ItemData> = ({ item }) => (
     <Item
@@ -260,6 +285,14 @@ export default function Home() {
         contentContainerStyle={{ flexGrow: 1 }}
         className="flex-1"
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#000000']} // Android
+            tintColor="#000000" // iOS
+          />
+        }
       >
         <View className="flex-1 items-center justify-center px-4 py-6">
           <View className="flex-col items-center gap-8 w-full">

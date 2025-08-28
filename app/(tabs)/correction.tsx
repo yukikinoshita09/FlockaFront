@@ -8,6 +8,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
+  RefreshControl,
   ScrollView,
   Text,
   View,
@@ -50,31 +51,44 @@ const paginate = (data: CollectionItem[], pageSize: number) => {
 export default function PagerScrollView() {
   const [collectionData, setCollectionData] = useState<CollectionItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
 
   // コレクションデータを取得
-  useEffect(() => {
-    const fetchCollection = async () => {
-      try {
+  const fetchCollection = async (isRefresh: boolean = false) => {
+    try {
+      if (!isRefresh) {
         setLoading(true);
-        setError(null);
-        console.log('Fetching collection data...');
-        const data = await apiClient.getCollection();
-        console.log('Collection data received:', data);
-        console.log('Number of items:', data.length);
-        if (data.length > 0) {
-          console.log('First item structure:', JSON.stringify(data[0], null, 2));
-        }
-        setCollectionData(data);
-      } catch (err) {
-        console.error('Failed to fetch collection:', err);
-        setError(err instanceof Error ? err.message : 'コレクションの取得に失敗しました');
-      } finally {
+      }
+      setError(null);
+      console.log('Fetching collection data...');
+      const data = await apiClient.getCollection();
+      console.log('Collection data received:', data);
+      console.log('Number of items:', data.length);
+      if (data.length > 0) {
+        console.log('First item structure:', JSON.stringify(data[0], null, 2));
+      }
+      setCollectionData(data);
+    } catch (err) {
+      console.error('Failed to fetch collection:', err);
+      setError(err instanceof Error ? err.message : 'コレクションの取得に失敗しました');
+    } finally {
+      if (!isRefresh) {
         setLoading(false);
       }
-    };
+    }
+  };
 
+  // プルトゥリフレッシュの処理
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchCollection(true);
+    setRefreshing(false);
+  };
+
+  // コレクションデータを取得
+  useEffect(() => {
     fetchCollection();
   }, []);
 
@@ -136,12 +150,24 @@ export default function PagerScrollView() {
   // データが空の場合
   if (collectionData.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <Text className="text-gray-500 text-center">
-          まだカードが収集されていません。{'\n'}
-          QR交換でカードを集めてみましょう！
-        </Text>
-      </View>
+      <ScrollView
+        contentContainerStyle={{ flex: 1 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#000000']} // Android
+            tintColor="#000000" // iOS
+          />
+        }
+      >
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-gray-500 text-center">
+            まだカードが収集されていません。{'\n'}
+            QR交換でカードを集めてみましょう！
+          </Text>
+        </View>
+      </ScrollView>
     );
   }
 
@@ -155,6 +181,14 @@ export default function PagerScrollView() {
         showsHorizontalScrollIndicator={false}
         onScroll={onScroll}
         scrollEventThrottle={16}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#000000']} // Android
+            tintColor="#000000" // iOS
+          />
+        }
       >
         {pages.map((page, pageIndex) => (
           <View key={pageIndex} className="py-10" style={{ width: screenWidth }}>

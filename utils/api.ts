@@ -376,6 +376,76 @@ export class ApiClient {
     
     throw new Error(response.error || 'Failed to get QR exchange logs');
   }
+
+  // コレクション一覧を取得
+  async getCollection(): Promise<{
+    id: string;
+    card: Card;
+    memo?: string;
+    location_name?: string;
+    created_at: string;
+  }[]> {
+    const response = await this.request<{
+      collections: {
+        id: string;
+        card: Card;
+        memo?: string;
+        location: string | null;
+        collected_at: string;
+      }[];
+      total: number;
+    }>('/exchanges');
+    
+    if (response.success && response.data) {
+      // APIレスポンス構造に合わせて変換
+      return response.data.collections.map(item => ({
+        id: item.id,
+        card: item.card,
+        memo: item.memo,
+        location_name: item.location || undefined,
+        created_at: item.collected_at
+      }));
+    }
+    
+    throw new Error(response.error || 'Failed to get collection');
+  }
+
+  // コレクション詳細を取得
+  // 注意: このエンドポイントは現在404を返すため使用していません
+  async getExchangeDetail(exchangeId: string): Promise<{
+    id: string;
+    card: Card;
+    memo?: string;
+    location_name?: string;
+    created_at: string;
+  }> {
+    const response = await this.request<{
+      id: string;
+      card: Card;
+      memo?: string;
+      location_name?: string;
+      created_at: string;
+    }>(`/exchanges/${exchangeId}`);
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    throw new Error(response.error || 'Failed to get exchange detail');
+  }
+
+  // コレクションのメモを更新
+  // 注意: このエンドポイントは現在404を返す可能性があります
+  async updateExchangeMemo(exchangeId: string, memo: string): Promise<void> {
+    const response = await this.request(`/exchanges/${exchangeId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ memo })
+    });
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to update memo');
+    }
+  }
 }
 
 export const apiClient = new ApiClient();

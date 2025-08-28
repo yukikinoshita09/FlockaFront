@@ -203,8 +203,8 @@ export default function SignIn() {
     <View className="flex-1 items-center justify-center">
       <View className="items-center">
         <Image
-          source={require("../assets/images/start-app-icon.png")}
-          className="w-40 h-40"
+          source={require("../assets/images/flocka-app-icon.png")}
+          className="w-28 h-28"
           resizeMode="contain">
         </Image>
         <Text className='text-xl font-extrabold mt-6'>flocka</Text>

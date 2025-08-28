@@ -33,8 +33,8 @@ export default function HomeScreen() {
   // 未認証の場合はスタート画面を表示
   return (
     <View className="flex-1 items-center justify-center ">
-      <Image source={require("../assets/images/start-app-icon.png")} 
-      className='w-40 h-40 mb-12'
+      <Image source={require("../assets/images/flocka-app-icon.png")}
+      className='w-28 h-28 mb-12'
       resizeMode='contain'/>
       <Text className='text-xl font-extrabold mb-48'>flocka</Text>
       <View className='w-full px-16'>

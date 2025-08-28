@@ -147,7 +147,7 @@ export default function CardDetail() {
           <Text className="text-gray-600 text-sm mb-4 text-center">{exchangeData.card.bio}</Text>
         )}
         {/* 各種リンク */}
-        {exchangeData.card.links && exchangeData.card.links.length > 0 ? (
+        {Array.isArray(exchangeData.card.links) && exchangeData.card.links.length > 0 ? (
           <View className="flex-row gap-4 mb-4 flex-wrap justify-center">
             {exchangeData.card.links.map((item, index) => (
               <Pressable

@@ -203,6 +203,30 @@ export class ApiClient {
     }
   }
 
+  // パスワードリセット申請（メール送信）
+  async forgotPassword(email: string): Promise<void> {
+    const response = await this.request('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }, true);
+
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to request password reset');
+    }
+  }
+
+  // パスワードリセット実行（トークン + 新パスワード）
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const response = await this.request('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, newPassword }),
+    }, true);
+
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to reset password');
+    }
+  }
+
   // 自分のカード一覧を取得
   async getMyCards(): Promise<Card[]> {
     const response = await this.request<Card[]>('/cards');

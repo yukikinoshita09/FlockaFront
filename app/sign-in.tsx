@@ -250,7 +250,7 @@ export default function SignIn() {
             </TouchableOpacity>
           </View>
         </View>
-        <Pressable onPress={() => console.log("click")}>
+        <Pressable onPress={() => router.push({ pathname: '/forgot-password' })}>
           <Text className="text-sm mt-3 text-right text-blue-400">パスワードを忘れた方</Text>
         </Pressable>
       </View>

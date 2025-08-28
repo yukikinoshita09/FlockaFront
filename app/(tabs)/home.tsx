@@ -42,7 +42,12 @@ const Item = ({ item, onPress, isSelected }: ItemProps) => {
       <TouchableOpacity
         onPress={() => router.navigate('/create-card')}
         className="w-80 h-48 border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center bg-gray-100"
-        style={{ width: 320, height: 192 }}
+        style={{
+          width: cardWidth,
+          height: cardHeight,
+          borderRadius: 12, // 角丸
+          marginTop: 8, // 上側の余白を追加
+        }}
       >
         <Entypo name="plus" size={48} color="gray" />
         <Text className="mt-2 text-gray-600">新しい名刺を作成</Text>
@@ -50,20 +55,31 @@ const Item = ({ item, onPress, isSelected }: ItemProps) => {
     );
   }
 
-  // 名刺データがある場合は実際の名刺画像を表示
   if (item.card && item.card.image_key) {
     return (
-      <View style={{ width: 320 }}>
+      <View
+        style={{
+          width: cardWidth,
+          alignItems: 'center', // 上側のズレを修正
+          marginTop: 8, // 上側の余白を追加
+        }}
+      >
         <TouchableOpacity
           onPress={onPress}
-          className={`w-80 ${isSelected ? 'border-4 border-blue-500' : ''}`}
-          style={{ width: 320 }}
+          className="w-80"
+          style={{
+            width: cardWidth,
+            height: cardHeight,
+            boxShadow: isSelected ? '0 0 0 4px #6d6d6d' : undefined, // 選択時に青い枠を表示
+            borderRadius: 12, // 角丸
+            overflow: 'hidden', // 画像が角丸に収まるように
+          }}
         >
           <Image
             source={{ uri: apiClient.getCardImageUrl(item.card.image_key) }}
             resizeMode="contain"
             className="w-full h-48"
-            style={{ width: 320, height: 192 }}
+            style={{ width: cardWidth, height: cardHeight }}
           />
         </TouchableOpacity>
         <Text className="text-center mt-2 text-lg font-medium text-black">
@@ -73,18 +89,30 @@ const Item = ({ item, onPress, isSelected }: ItemProps) => {
     );
   }
 
-  // フォールバック（サンプル画像）
   return (
-    <View style={{ width: 320 }}>
+    <View
+      style={{
+        width: cardWidth,
+        alignItems: 'center', // 上側のズレを修正
+        marginTop: 8, // 上側の余白を追加
+      }}
+    >
       <TouchableOpacity
         onPress={onPress}
-        className={`w-80 ${isSelected ? 'border-4 border-blue-500' : ''}`}
-        style={{ width: 320 }}
+        className="w-80"
+        style={{
+          width: cardWidth,
+          height: cardHeight,
+          boxShadow: isSelected ? '0 0 0 4px #6d6d6d' : undefined, // 選択時に青い枠を表示
+          borderRadius: 12, // 角丸
+          overflow: 'hidden', // 画像が角丸に収まるように
+        }}
       >
         <Image
           source={require("../../assets/images/sample-profile-card.png")}
           resizeMode="contain"
           className="w-full"
+          style={{ height: cardHeight }}
         />
       </TouchableOpacity>
       <Text className="text-center mt-2 text-lg font-medium text-black">
@@ -93,6 +121,10 @@ const Item = ({ item, onPress, isSelected }: ItemProps) => {
     </View>
   );
 };
+
+// 名刺サイズの比率を55mm×91mmに変更
+const cardWidth = 320;
+const cardHeight = Math.round(cardWidth / 1.65); // 高さを計算
 
 export default function Home() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -110,7 +142,6 @@ export default function Home() {
 
   // 画面幅を取得
   const screenWidth = Dimensions.get('window').width;
-  const cardWidth = 320;
   const cardSpacing = 12;
   const itemWidth = cardWidth + cardSpacing;
   

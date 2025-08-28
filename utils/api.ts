@@ -236,6 +236,39 @@ export class ApiClient {
     throw new Error(response.error || 'Failed to create card');
   }
 
+  // カード情報を更新
+  async updateCard(cardId: string, cardData: {
+    card_name: string;
+    bio?: string;
+    image_key?: string;
+    links: {
+      title: string;
+      url: string;
+    }[];
+  }): Promise<Card> {
+    const response = await this.request<Card>(`/cards/${cardId}`, {
+      method: 'PUT',
+      body: JSON.stringify(cardData)
+    });
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    throw new Error(response.error || 'Failed to update card');
+  }
+
+  // カードを削除
+  async deleteCard(cardId: string): Promise<void> {
+    const response = await this.request(`/cards/${cardId}`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to delete card');
+    }
+  }
+
   // 画像ファイルを直接アップロード
   async uploadImage(imageUri: string): Promise<{ imageKey: string; imageUrl: string }> {
     try {

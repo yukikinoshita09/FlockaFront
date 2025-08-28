@@ -1,3 +1,4 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
@@ -66,6 +67,10 @@ const Item = ({ item, onPress, isSelected }: ItemProps) => {
       >
         <TouchableOpacity
           onPress={onPress}
+          onLongPress={() => {
+            // 長押しで編集画面に遷移
+            router.push(`/edit-card?id=${item.card?.id}`);
+          }}
           className="w-80"
           style={{
             width: cardWidth,
@@ -82,9 +87,15 @@ const Item = ({ item, onPress, isSelected }: ItemProps) => {
             style={{ width: cardWidth, height: cardHeight }}
           />
         </TouchableOpacity>
-        <Text className="text-center mt-2 text-lg font-medium text-black">
-          {item.card.card_name}
-        </Text>
+        <TouchableOpacity 
+          onPress={() => router.push(`/edit-card?id=${item.card?.id}`)}
+          className="flex-row items-center mt-2"
+        >
+          <Text className="text-center text-lg font-medium text-black mr-1">
+            {item.card.card_name}
+          </Text>
+          <MaterialIcons name="edit" size={16} color="#6B7280" />
+        </TouchableOpacity>
       </View>
     );
   }
@@ -99,6 +110,12 @@ const Item = ({ item, onPress, isSelected }: ItemProps) => {
     >
       <TouchableOpacity
         onPress={onPress}
+        onLongPress={() => {
+          // 長押しで編集画面に遷移（カードIDがある場合のみ）
+          if (item.card?.id) {
+            router.push(`/edit-card?id=${item.card.id}`);
+          }
+        }}
         className="w-80"
         style={{
           width: cardWidth,
@@ -115,9 +132,16 @@ const Item = ({ item, onPress, isSelected }: ItemProps) => {
           style={{ height: cardHeight }}
         />
       </TouchableOpacity>
-      <Text className="text-center mt-2 text-lg font-medium text-black">
-        {item.card?.card_name || "サンプル名刺"}
-      </Text>
+      <View className="flex-row items-center mt-2">
+        <Text className="text-center text-lg font-medium text-black mr-1">
+          {item.card?.card_name || "サンプル名刺"}
+        </Text>
+        {item.card?.id && (
+          <TouchableOpacity onPress={() => router.push(`/edit-card?id=${item.card?.id}`)}>
+            <MaterialIcons name="edit" size={16} color="#6B7280" />
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 };

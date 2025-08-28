@@ -10,6 +10,8 @@ import {
   Image,
   ListRenderItem,
   Pressable,
+  SafeAreaView,
+  ScrollView,
   Text,
   TouchableOpacity,
   View
@@ -189,86 +191,99 @@ export default function Home() {
   );
 
   return (
-    <View className="flex-1 items-center justify-center bg-gray-50">
-      <View className="flex-col items-center gap-10">
-        <View className="items-center">
-          {isGeneratingQR ? (
-            <View className="w-52 h-52 items-center justify-center bg-white rounded-lg border border-gray-200">
-              <ActivityIndicator size="large" color="#000000" />
-              <Text className="mt-2 text-sm text-gray-600">QR生成中...</Text>
+    <SafeAreaView className="flex-1 bg-gray-50">
+      <ScrollView 
+        contentContainerStyle={{ flexGrow: 1 }}
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="flex-1 items-center justify-center px-4 py-6">
+          <View className="flex-col items-center gap-8 w-full">
+            {/* QRコード表示エリア */}
+            <View className="items-center">
+              {isGeneratingQR ? (
+                <View className="w-52 h-52 items-center justify-center bg-white rounded-lg border border-gray-200">
+                  <ActivityIndicator size="large" color="#000000" />
+                  <Text className="mt-2 text-sm text-gray-600">QR生成中...</Text>
+                </View>
+              ) : (
+                <QRCode value={qrValue} size={200} quietZone={20} />
+              )}
+              {selectedId && selectedId !== "add" && (
+                <Text className="mt-2 text-sm text-gray-600">
+                  選択中のカードの交換用QR
+                </Text>
+              )}
             </View>
-          ) : (
-            <QRCode value={qrValue} size={200} quietZone={20} />
-          )}
-          {selectedId && selectedId !== "add" && (
-            <Text className="mt-2 text-sm text-gray-600">
-              選択中のカードの交換用QR
-            </Text>
-          )}
-        </View>
-        <View className="flex-row gap-8 mb-20">
-          <Pressable onPress={()=>console.log('ble')} className="items-center">
-            <View className="bg-white p-4 rounded-full">
-              <MaterialCommunityIcons name="cellphone-wireless" size={24} color="black" />
+
+            {/* アクションボタン */}
+            <View className="flex-row gap-8 justify-center">
+              <Pressable onPress={()=>console.log('ble')} className="items-center">
+                <View className="bg-white p-4 rounded-full">
+                  <MaterialCommunityIcons name="cellphone-wireless" size={24} color="black" />
+                </View>
+                <Text className="mt-2">近くの人と</Text>
+              </Pressable>
+              <Pressable onPress={()=>console.log('url')} className="items-center">
+                <View className="bg-white p-4 rounded-full">    
+                  <Entypo name="link" size={24} color="black" />
+                </View>
+                <Text className="mt-2">コードを送る</Text>
+              </Pressable>
+              <Pressable onPress={()=>{
+                if (selectedId && selectedId !== "add") {
+                  router.push(`/scan-qr?selectedCardId=${selectedId}`);
+                } else {
+                  Alert.alert(
+                    "カードを選択してください",
+                    "交換するカードを選択してからQRコードを読み取ってください。",
+                    [{ text: "OK", style: "default" }]
+                  );
+                }
+              }} className="items-center">
+                <View className="bg-white p-4 rounded-full">    
+                  <MaterialCommunityIcons name="qrcode-scan" size={30} color="black" />
+                </View>
+                <Text className="mt-2">読み取る</Text>
+              </Pressable>
             </View>
-            <Text className="mt-2">近くの人と</Text>
-          </Pressable>
-          <Pressable onPress={()=>console.log('url')} className="items-center">
-            <View className="bg-white p-4 rounded-full">    
-              <Entypo name="link" size={24} color="black" />
+
+            {/* カード一覧 */}
+            <View className="w-full">
+              {isLoading ? (
+                <View className="flex-1 items-center justify-center h-72">
+                  <ActivityIndicator size="large" color="#000000" />
+                  <Text className="mt-2">カードを読み込み中...</Text>
+                </View>
+              ) : (
+                <FlatList
+                  className="max-h-72"
+                  data={cards}
+                  horizontal
+                  keyExtractor={(item) => item.id}
+                  renderItem={renderItem}
+                  extraData={selectedId}
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ 
+                    paddingLeft: sideMargin - cardSpacing/2, 
+                    paddingRight: sideMargin - cardSpacing/2 
+                  }}
+                  ItemSeparatorComponent={() => <View style={{ width: cardSpacing }} />}
+                  snapToOffsets={snapOffsets}
+                  decelerationRate="fast"
+                  pagingEnabled={false}
+                  initialScrollIndex={cards.length > 1 ? 1 : 0} // 最初のカードを中央に表示
+                  getItemLayout={(data, index) => ({
+                    length: itemWidth,
+                    offset: itemWidth * index,
+                    index,
+                  })}
+                />
+              )}
             </View>
-            <Text className="mt-2">コードを送る</Text>
-          </Pressable>
-          <Pressable onPress={()=>{
-            if (selectedId && selectedId !== "add") {
-              router.push(`/scan-qr?selectedCardId=${selectedId}`);
-            } else {
-              Alert.alert(
-                "カードを選択してください",
-                "交換するカードを選択してからQRコードを読み取ってください。",
-                [{ text: "OK", style: "default" }]
-              );
-            }
-          }} className="items-center">
-            <View className="bg-white p-4 rounded-full">    
-              <MaterialCommunityIcons name="qrcode-scan" size={30} color="black" />
-            </View>
-            <Text className="mt-2">読み取る</Text>
-          </Pressable>
-        </View>
-      </View>
-      <View className="flex-row items-center mb-4">
-        {isLoading ? (
-          <View className="flex-1 items-center justify-center h-72">
-            <ActivityIndicator size="large" color="#000000" />
-            <Text className="mt-2">カードを読み込み中...</Text>
           </View>
-        ) : (
-          <FlatList
-            className="max-h-72"
-            data={cards}
-            horizontal
-            keyExtractor={(item) => item.id}
-            renderItem={renderItem}
-            extraData={selectedId}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ 
-              paddingLeft: sideMargin - cardSpacing/2, 
-              paddingRight: sideMargin - cardSpacing/2 
-            }}
-            ItemSeparatorComponent={() => <View style={{ width: cardSpacing }} />}
-            snapToOffsets={snapOffsets}
-            decelerationRate="fast"
-            pagingEnabled={false}
-            initialScrollIndex={cards.length > 1 ? 1 : 0} // 最初のカードを中央に表示
-            getItemLayout={(data, index) => ({
-              length: itemWidth,
-              offset: itemWidth * index,
-              index,
-            })}
-          />
-        )}
-      </View>
-    </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }

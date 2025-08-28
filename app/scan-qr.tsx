@@ -1,6 +1,6 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
-import { useRef, useState, useCallback } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import { Alert, Button, Text, View } from 'react-native';
 
 export default function ScanQr() {

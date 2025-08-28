@@ -9,6 +9,7 @@ import {
   FlatList,
   Image,
   ListRenderItem,
+  Pressable,
   Text,
   TouchableOpacity,
   View
@@ -218,7 +219,17 @@ export default function Home() {
             </View>
             <Text className="mt-2">コードを送る</Text>
           </Pressable>
-          <Pressable onPress={()=>router.push('/scan-qr')} className="items-center">
+          <Pressable onPress={()=>{
+            if (selectedId && selectedId !== "add") {
+              router.push(`/scan-qr?selectedCardId=${selectedId}`);
+            } else {
+              Alert.alert(
+                "カードを選択してください",
+                "交換するカードを選択してからQRコードを読み取ってください。",
+                [{ text: "OK", style: "default" }]
+              );
+            }
+          }} className="items-center">
             <View className="bg-white p-4 rounded-full">    
               <MaterialCommunityIcons name="qrcode-scan" size={30} color="black" />
             </View>

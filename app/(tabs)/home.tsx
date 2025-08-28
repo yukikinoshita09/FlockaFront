@@ -158,6 +158,7 @@ export default function Home() {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [qrValue, setQrValue] = useState<string>("Hello, QR Code!");
   const [isGeneratingQR, setIsGeneratingQR] = useState<boolean>(false);
+  const [hasInitialized, setHasInitialized] = useState<boolean>(false);
 
   // QR交換通知をチェック
   const { 
@@ -223,10 +224,7 @@ export default function Home() {
       if (apiCards.length > 0) {
         const firstCardId = apiCards[0].id;
         setSelectedId(firstCardId);
-        // 初期名刺のQRコードを生成
-        if (!isRefresh) {
-          setTimeout(() => generateQRCode(firstCardId), 100);
-        }
+        // QRコードの生成は selectedId の useEffect で行う
       }
     } catch (error) {
       console.error('Failed to fetch cards:', error);
@@ -238,9 +236,10 @@ export default function Home() {
     } finally {
       if (!isRefresh) {
         setIsLoading(false);
+        setHasInitialized(true);
       }
     }
-  }, [generateQRCode]);
+  }, []); // generateQRCodeの依存関係を削除
 
   // プルトゥリフレッシュの処理
   const onRefresh = async () => {
@@ -257,11 +256,11 @@ export default function Home() {
   // 画面がフォーカスされた時にデータを更新（編集から戻った時など）
   useFocusEffect(
     useCallback(() => {
-      // 初回ロード後の場合のみリフレッシュ
-      if (!isLoading) {
-        fetchCards();
+      // 初期化完了後で、かつリフレッシュ中でない場合のみ実行
+      if (hasInitialized && !refreshing) {
+        fetchCards(true); // リフレッシュとして実行
       }
-    }, [isLoading, fetchCards])
+    }, [hasInitialized, refreshing, fetchCards])
   );
 
   // 名刺選択時にQRコードを更新

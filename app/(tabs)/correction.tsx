@@ -81,7 +81,7 @@ export default function PagerScrollView() {
             <View
               key={index}
               className={`w-2.5 h-2.5 rounded-full mx-1.5 ${
-                index === currentPage ? "bg-blue-500" : "bg-gray-300"
+                index === currentPage ? "bg-gray-500" : "bg-gray-300"
               }`}
             />
           ))}

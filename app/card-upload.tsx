@@ -45,7 +45,7 @@ export default function CardUpload() {
       ) : (
         <Pressable
           onPress={pickImage}
-          className="flex-col items-center mt-4 px-20 py-20 bg-white border border-gray-300 border-dashed"
+          className="flex-col items-center mt-4 px-20 py-20 bg-white border border-gray-300 border-dashed rounded-xl"
         >
           <Entypo name="image" size={24} color="gray" />
           <Text className="text-xl font-bold text-gray-400">名刺をアップロード</Text>

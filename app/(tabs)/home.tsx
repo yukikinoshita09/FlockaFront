@@ -211,12 +211,16 @@ export default function Home() {
             {/* QRコード表示エリア */}
             <View className="items-center">
               {isGeneratingQR ? (
-                <View className="w-52 h-52 items-center justify-center bg-white rounded-lg border border-gray-200">
+                <View className="w-52 h-52 items-center justify-center bg-white rounded-lg border border-gray-200 shadow-gray-200 shadow-sm">
                   <ActivityIndicator size="large" color="#000000" />
                   <Text className="mt-2 text-sm text-gray-600">QR生成中...</Text>
                 </View>
               ) : (
-                <QRCode value={qrValue} size={200} quietZone={20} />
+                <View className="shadow-md shadow-gray-200 rounded-lg">
+                  <View className="bg-white rounded-lg overflow-hidden">
+                    <QRCode value={qrValue} size={200} quietZone={20} />
+                  </View>
+                </View>
               )}
               {selectedId && selectedId !== "add" && (
                 <Text className="mt-2 text-sm text-gray-600">
@@ -228,13 +232,13 @@ export default function Home() {
             {/* アクションボタン */}
             <View className="flex-row gap-8 justify-center">
               <Pressable onPress={()=>console.log('ble')} className="items-center">
-                <View className="bg-white p-4 rounded-full">
+                <View className="bg-white p-4 rounded-full shadow-gray-200 shadow-sm">
                   <MaterialCommunityIcons name="cellphone-wireless" size={24} color="black" />
                 </View>
                 <Text className="mt-2">近くの人と</Text>
               </Pressable>
               <Pressable onPress={()=>console.log('url')} className="items-center">
-                <View className="bg-white p-4 rounded-full">    
+                <View className="bg-white p-4 rounded-full shadow-gray-200 shadow-sm">
                   <Entypo name="link" size={24} color="black" />
                 </View>
                 <Text className="mt-2">コードを送る</Text>
@@ -250,8 +254,8 @@ export default function Home() {
                   );
                 }
               }} className="items-center">
-                <View className="bg-white p-4 rounded-full">    
-                  <MaterialCommunityIcons name="qrcode-scan" size={30} color="black" />
+                <View className="bg-white p-4 rounded-full shadow-gray-200 shadow-sm">    
+                  <MaterialCommunityIcons name="qrcode-scan" size={24} color="black" />
                 </View>
                 <Text className="mt-2">読み取る</Text>
               </Pressable>

@@ -183,9 +183,13 @@ export default function CardPreview() {
         <View className="p-4">
           {/* カード画像 */}
           <View className="bg-white rounded-lg shadow-sm p-4 mb-4">
-            {cardData.card.image_key ? (
+            {(cardData.card.image_url || cardData.card.image_key) ? (
               <Image
-                source={{ uri: apiClient.getCardImageUrl(cardData.card.image_key) }}
+                source={{ 
+                  uri: cardData.card.image_url 
+                    ? `${apiClient.getBaseUrl()}${cardData.card.image_url}` 
+                    : apiClient.getCardImageUrl(cardData.card.image_key!) 
+                }}
                 className="w-full h-48 rounded-lg"
                 resizeMode="contain"
               />

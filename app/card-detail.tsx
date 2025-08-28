@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Text, View, Image, Pressable, FlatList, Linking, Modal, TextInput } from "react-native";
+import { Image, Linking, Modal, Pressable, Text, TextInput, View } from "react-native";
 
 // テスト用のデータ
 const cardData = {

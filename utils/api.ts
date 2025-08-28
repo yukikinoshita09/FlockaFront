@@ -24,6 +24,17 @@ interface LoginResponse {
   };
 }
 
+export interface Card {
+  id: string;
+  card_name: string;
+  image_key: string;
+  links: {
+    title: string;
+    url: string;
+  }[];
+  created_at: string;
+}
+
 // トークンの保存・取得・削除
 export const tokenManager = {
   async save(token: string): Promise<void> {
@@ -187,6 +198,22 @@ export class ApiClient {
     if (!response.success) {
       throw new Error(response.error || 'Failed to resend verification email');
     }
+  }
+
+  // 自分のカード一覧を取得
+  async getMyCards(): Promise<Card[]> {
+    const response = await this.request<Card[]>('/cards');
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    throw new Error(response.error || 'Failed to get cards');
+  }
+
+  // カード画像のURLを生成
+  getCardImageUrl(imageKey: string): string {
+    return `${this.baseUrl}/cards/image/${imageKey}`;
   }
 }
 

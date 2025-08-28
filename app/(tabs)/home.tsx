@@ -1,8 +1,10 @@
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Dimensions,
   FlatList,
   Image,
@@ -12,20 +14,15 @@ import {
   View
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
+import { apiClient, Card } from "../../utils/api";
 
 // データ型
 type ItemData = {
   id: string;
   image?: any;
-  type: 'card' | 'add'; // アイテムの種類
+  type: 'card' | 'add';
+  card?: Card; // APIから取得したカードデータ
 };
-
-const DATA: ItemData[] = [
-  { id: "add", type: "add" }, // 追加ボタン
-  { id: "1", image: require("../../assets/images/sample-profile-card.png"), type: "card" },
-  { id: "2", image: require("../../assets/images/sample-profile-card.png"), type: "card" },
-  { id: "3", image: require("../../assets/images/sample-profile-card.png"), type: "card" },
-];
 
 // 単一アイテム
 type ItemProps = {
@@ -48,23 +45,54 @@ const Item = ({ item, onPress, isSelected }: ItemProps) => {
     );
   }
 
+  // カードデータがある場合は実際のカード画像を表示
+  if (item.card && item.card.image_key) {
+    return (
+      <View style={{ width: 320 }}>
+        <TouchableOpacity
+          onPress={onPress}
+          className={`w-80 ${isSelected ? 'border-4 border-blue-500' : ''}`}
+          style={{ width: 320 }}
+        >
+          <Image
+            source={{ uri: apiClient.getCardImageUrl(item.card.image_key) }}
+            resizeMode="contain"
+            className="w-full h-48"
+            style={{ width: 320, height: 192 }}
+          />
+        </TouchableOpacity>
+        <Text className="text-center mt-2 text-lg font-medium text-black">
+          {item.card.card_name}
+        </Text>
+      </View>
+    );
+  }
+
+  // フォールバック（サンプル画像）
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      className={`w-80 ${isSelected ? 'border-4 border-blue-500' : ''}`}
-      style={{ width: 320 }} // 明示的に幅を指定
-    >
-      <Image
-        source={item.image}
-        resizeMode="contain"
-        className="w-full"
-      />
-    </TouchableOpacity>
+    <View style={{ width: 320 }}>
+      <TouchableOpacity
+        onPress={onPress}
+        className={`w-80 ${isSelected ? 'border-4 border-blue-500' : ''}`}
+        style={{ width: 320 }}
+      >
+        <Image
+          source={require("../../assets/images/sample-profile-card.png")}
+          resizeMode="contain"
+          className="w-full"
+        />
+      </TouchableOpacity>
+      <Text className="text-center mt-2 text-lg font-medium text-black">
+        {item.card?.card_name || "サンプルカード"}
+      </Text>
+    </View>
   );
 };
 
 export default function Home() {
-  const [selectedId, setSelectedId] = useState<string>("1"); // 初期選択を最初のカードに
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [cards, setCards] = useState<ItemData[]>([{ id: "add", type: "add" }]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // 画面幅を取得
   const screenWidth = Dimensions.get('window').width;
@@ -76,9 +104,48 @@ export default function Home() {
   const sideMargin = (screenWidth - cardWidth) / 2;
 
   // 各カードが中央に来る位置を計算
-  const snapOffsets = DATA.map((_, index) => {
+  const snapOffsets = cards.map((_, index: number) => {
     return index * itemWidth;
   });
+
+  // カードデータを取得
+  const fetchCards = async () => {
+    try {
+      setIsLoading(true);
+      const apiCards = await apiClient.getMyCards();
+      
+      // 追加ボタン + APIから取得したカード
+      const allItems: ItemData[] = [
+        { id: "add", type: "add" },
+        ...apiCards.map((card: Card) => ({
+          id: card.id,
+          type: 'card' as const,
+          card: card
+        }))
+      ];
+      
+      setCards(allItems);
+      
+      // 初期選択を最初のカードに設定（追加ボタンではない）
+      if (apiCards.length > 0) {
+        setSelectedId(apiCards[0].id);
+      }
+    } catch (error) {
+      console.error('Failed to fetch cards:', error);
+      Alert.alert(
+        "カード取得エラー",
+        "カード情報の取得に失敗しました。再度お試しください。",
+        [{ text: "OK", style: "default" }]
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 初回ロード時にカードを取得
+  useEffect(() => {
+    fetchCards();
+  }, []);
 
   const renderItem: ListRenderItem<ItemData> = ({ item }) => (
     <Item
@@ -114,29 +181,36 @@ export default function Home() {
         </View>
       </View>
       <View className="flex-row items-center mb-4">
-        <FlatList
-          className="max-h-60"
-          data={DATA}
-          horizontal
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          extraData={selectedId}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ 
-            paddingLeft: sideMargin - cardSpacing/2, 
-            paddingRight: sideMargin - cardSpacing/2 
-          }}
-          ItemSeparatorComponent={() => <View style={{ width: cardSpacing }} />}
-          snapToOffsets={snapOffsets}
-          decelerationRate="fast"
-          pagingEnabled={false}
-          initialScrollIndex={1}
-          getItemLayout={(data, index) => ({
-            length: itemWidth,
-            offset: itemWidth * index,
-            index,
-          })}
-        />
+        {isLoading ? (
+          <View className="flex-1 items-center justify-center h-72">
+            <ActivityIndicator size="large" color="#000000" />
+            <Text className="mt-2">カードを読み込み中...</Text>
+          </View>
+        ) : (
+          <FlatList
+            className="max-h-72"
+            data={cards}
+            horizontal
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            extraData={selectedId}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ 
+              paddingLeft: sideMargin - cardSpacing/2, 
+              paddingRight: sideMargin - cardSpacing/2 
+            }}
+            ItemSeparatorComponent={() => <View style={{ width: cardSpacing }} />}
+            snapToOffsets={snapOffsets}
+            decelerationRate="fast"
+            pagingEnabled={false}
+            initialScrollIndex={cards.length > 1 ? 1 : 0} // 最初のカードを中央に表示
+            getItemLayout={(data, index) => ({
+              length: itemWidth,
+              offset: itemWidth * index,
+              index,
+            })}
+          />
+        )}
       </View>
     </View>
   );

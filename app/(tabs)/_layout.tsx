@@ -32,7 +32,7 @@ export default function TabLayout() {
         name="correction"
         options={{
           title: 'コレクション',
-          tabBarIcon: ({ color }) => <AntDesign name="book" size={24} color="black" />,
+          tabBarIcon: ({ color }) => <AntDesign name="book" size={24} color={color} />,
         }}
       />
       <Tabs.Screen

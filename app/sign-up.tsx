@@ -186,11 +186,15 @@ export default function SignUp() {
           className="w-28 h-28"
           resizeMode="contain">
         </Image>
-        <Text className='text-xl font-extrabold mt-6'>flocka</Text>
+        <Image
+          source={require("../assets/images/flocka-app-name.png")}
+          className='w-28 h-28'
+          resizeMode='contain'
+        />
       </View>
       <View className="w-full px-16 mt-4">
         <View>
-          <Text className='text-lg font-extrabold mt-16'>メールアドレス</Text>
+          <Text className='text-lg font-extrabold'>メールアドレス</Text>
           <TextInput
             placeholder="sample@example.com"
             className="mt-3 h-14 border border-gray-400 rounded-lg px-4 text-base"
@@ -229,9 +233,6 @@ export default function SignUp() {
             </TouchableOpacity>
           </View>
         </View>
-        <Pressable onPress={() => console.log("click")}>
-          <Text className="text-base mt-2 left text-gray-400">半角英数字のみ・8文字以上</Text>
-        </Pressable>
       </View>
       <View className='w-full px-16 mt-16'>
         <Pressable 

@@ -34,9 +34,11 @@ export default function HomeScreen() {
   return (
     <View className="flex-1 items-center justify-center ">
       <Image source={require("../assets/images/flocka-app-icon.png")}
-      className='w-28 h-28 mb-12'
+      className='w-28 h-28'
       resizeMode='contain'/>
-      <Text className='text-xl font-extrabold mb-48'>flocka</Text>
+      <Image source={require("../assets/images/flocka-app-name.png")}
+      className='w-28 h-28 mb-20'
+      resizeMode='contain'/>
       <View className='w-full px-16'>
         <Pressable onPress={()=>router.navigate('/sign-up')} className='bg-black h-16 items-center justify-center rounded-lg'>
           <Text className="text-xl font-bold text-white">
@@ -45,7 +47,7 @@ export default function HomeScreen() {
         </Pressable>
       </View>
       <View className='w-full px-16 '>
-        <Pressable onPress={()=>router.navigate('/sign-in')} className="h-16 items-center justify-center border border-gray-400 mt-12 rounded-lg">
+        <Pressable onPress={()=>router.navigate('/sign-in')} className="h-16 items-center justify-center border border-gray-400 mt-8 rounded-lg">
           <Text className="text-xl font-bold">
             ログイン
           </Text>

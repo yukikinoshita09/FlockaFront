@@ -27,13 +27,15 @@ interface LoginResponse {
 export interface Card {
   id: string;
   card_name: string;
-  image_key: string;
+  image_key?: string;
+  image_url?: string;
   bio?: string;
   links: {
     title: string;
     url: string;
   }[];
-  created_at: string;
+  created_at?: string;
+  owner_name?: string;
 }
 
 // トークンの保存・取得・削除
@@ -217,6 +219,11 @@ export class ApiClient {
     return `${this.baseUrl}/cards/image/${imageKey}`;
   }
 
+  // APIのベースURLを取得
+  getBaseUrl(): string {
+    return this.baseUrl;
+  }
+
   // QRコード交換用データを生成
   async generateQRCode(cardId: string, expiresIn: number = 3600): Promise<{
     qrData: string;
@@ -289,21 +296,36 @@ export class ApiClient {
     ownerName?: string;
     expiresAt: string;
   }> {
-    const response = await this.request<{
-      cardId: string;
-      cardName: string;
-      card: Card & {
-        user?: {
-          name: string;
-          email: string;
-        };
+    // QRデータがJSONの場合はパースしてトークンとカードIDを取得
+    let cardId: string;
+    try {
+      const qrObj = JSON.parse(qrData);
+      if (qrObj.cardId) {
+        cardId = qrObj.cardId;
+      } else {
+        throw new Error('Invalid QR data format');
+      }
+    } catch {
+      throw new Error('Invalid QR data format');
+    }
+
+    // 公開カード情報を取得
+    const response = await this.request<Card & {
+      user?: {
+        name: string;
+        email: string;
       };
-      ownerName?: string;
-      expiresAt: string;
-    }>(`/exchanges/qr-info?qrData=${encodeURIComponent(qrData)}`);
+    }>(`/cards/public/${cardId}`);
     
     if (response.success && response.data) {
-      return response.data;
+      const cardData = response.data;
+      return {
+        cardId: cardData.id,
+        cardName: cardData.card_name,
+        card: cardData,
+        ownerName: cardData.user?.name,
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30分後
+      };
     }
     
     throw new Error(response.error || 'Failed to get QR token info');

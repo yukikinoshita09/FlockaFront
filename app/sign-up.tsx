@@ -1,23 +1,22 @@
-import { Pressable, Text, View, Image, TextInput, TouchableOpacity} from "react-native";
-import { router } from 'expo-router';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from 'expo-router';
+import { useState } from "react";
+import { Image, Pressable, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   return (
-    <>
+    <View className="flex-1 items-center justify-center">
       <View className="items-center">
         <Image
           source={require("../assets/images/start-app-icon.png")}
-          className="w-32 h-32 mt-14"
+          className="w-40 h-40"
           resizeMode="contain">
         </Image>
-        <Text className='text-4xl font-extrabold mt-10'>flocka</Text>
+        <Text className='text-xl font-extrabold mt-6'>flocka</Text>
       </View>
-      <View className="mx-14 mt-4">
+      <View className="w-full px-16 mt-4">
         <View>
           <Text className='text-lg font-extrabold mt-16'>メールアドレス</Text>
           <TextInput
@@ -57,12 +56,12 @@ export default function SignIn() {
         </Pressable>
       </View>
       <View className='w-full px-16'>
-        <Pressable onPress={() => router.navigate('/sign-up')} className="h-16 items-center justify-center mt-2">  
+        <Pressable onPress={() => router.navigate('/sign-in')} className="h-16 items-center justify-center mt-2">  
           <Text className="text-xl font-bold">
             ログインはこちら
           </Text>
         </Pressable>
       </View>
-    </>
+    </View>
   );
 }

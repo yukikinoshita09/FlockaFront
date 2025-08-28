@@ -200,16 +200,16 @@ export default function SignIn() {
   };
 
   return (
-    <>
+    <View className="flex-1 items-center justify-center">
       <View className="items-center">
         <Image
           source={require("../assets/images/start-app-icon.png")}
-          className="w-32 h-32 mt-14"
+          className="w-40 h-40"
           resizeMode="contain">
         </Image>
-        <Text className='text-4xl font-extrabold mt-10'>flocka</Text>
+        <Text className='text-xl font-extrabold mt-6'>flocka</Text>
       </View>
-      <View className="mx-14 mt-4">
+      <View className="w-full px-16 mt-4">
         <View>
           <Text className='text-lg font-extrabold mt-16'>メールアドレス</Text>
           <TextInput
@@ -272,6 +272,6 @@ export default function SignIn() {
           </Text>
         </Pressable>
       </View>
-    </>
+    </View>
   );
 }

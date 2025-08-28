@@ -63,8 +63,8 @@ export default function CardPreview() {
         console.error('Failed to fetch card data:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         Alert.alert(
-          "カード情報取得エラー",
-          `カード情報の取得に失敗しました。\n詳細: ${errorMessage}\n\nQRコードの有効期限が切れている可能性があります。`,
+          "名刺情報取得エラー",
+          `名刺情報の取得に失敗しました。\n詳細: ${errorMessage}\n\nQRコードの有効期限が切れている可能性があります。`,
           [{ text: "OK", onPress: () => router.back() }]
         );
       } finally {
@@ -75,7 +75,7 @@ export default function CardPreview() {
     fetchCardData();
   }, [qrData]);
 
-  // カード交換処理
+  // 名刺交換処理
   const handleExchange = async () => {
     if (!selectedCardId || !qrData) {
       Alert.alert("エラー", "交換に必要な情報が不足しています。");
@@ -94,12 +94,21 @@ export default function CardPreview() {
         undefined
       );
 
+      // デバッグ用ログ
+      console.log('Exchange result:', result);
+      console.log('Your new card name:', result.exchangedCards.yourNewCard.card_name);
+      console.log('Your sent card name:', result.exchangedCards.yourCardSent.card_name);
+
+      // 即時交換成功 - 受け取った名刺の詳細を表示
+      const yourNewCardName = result.exchangedCards?.yourNewCard?.card_name || '名刺';
+      const yourSentCardName = result.exchangedCards?.yourCardSent?.card_name || 'あなたの名刺';
+      
       Alert.alert(
         "交換成功！",
-        `「${result.collectedCard.card_name}」を受け取りました！\nコレクションに追加されました。`,
+        `「${yourNewCardName}」を受け取りました！\n\n相手にも「${yourSentCardName}」が送信されました。\n\nコレクションに追加されました。`,
         [
           {
-            text: "OK",
+            text: "ホームに戻る",
             onPress: () => router.replace('/(tabs)/home')
           }
         ]
@@ -109,7 +118,7 @@ export default function CardPreview() {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       Alert.alert(
         "交換エラー",
-        `カードの交換に失敗しました。\n詳細: ${errorMessage}\n\n再度お試しください。`,
+        `名刺の交換に失敗しました。\n詳細: ${errorMessage}\n\n再度お試しください。`,
         [{ text: "OK", style: "default" }]
       );
     } finally {
@@ -121,7 +130,7 @@ export default function CardPreview() {
   const handleCancel = () => {
     Alert.alert(
       "交換をキャンセル",
-      "カードの交換をキャンセルしますか？",
+      "名刺の交換をキャンセルしますか？",
       [
         { text: "続ける", style: "cancel" },
         { 
@@ -145,7 +154,7 @@ export default function CardPreview() {
     return (
       <View className="flex-1 justify-center items-center bg-white">
         <ActivityIndicator size="large" color="#000000" />
-        <Text className="mt-4 text-lg">カード情報を読み込み中...</Text>
+        <Text className="mt-4 text-lg">名刺情報を読み込み中...</Text>
       </View>
     );
   }
@@ -153,7 +162,7 @@ export default function CardPreview() {
   if (!cardData) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
-        <Text className="text-lg text-red-500">カード情報の読み込みに失敗しました</Text>
+        <Text className="text-lg text-red-500">名刺情報の読み込みに失敗しました</Text>
         <TouchableOpacity 
           onPress={() => router.back()}
           className="mt-4 bg-gray-500 px-6 py-3 rounded-lg"
@@ -176,23 +185,28 @@ export default function CardPreview() {
             {cardData.card.card_name}
           </Text>
           <Text className="text-sm text-center text-gray-600 mt-1">
-            カードプレビュー
+            名刺プレビュー
           </Text>
         </View>
 
         <View className="p-4">
-          {/* カード画像 */}
+          {/* 名刺画像 */}
           <View className="bg-white rounded-lg shadow-sm p-4 mb-4">
             {(cardData.card.image_url || cardData.card.image_key) ? (
-              <Image
-                source={{ 
-                  uri: cardData.card.image_url 
-                    ? `${apiClient.getBaseUrl()}${cardData.card.image_url}` 
-                    : apiClient.getCardImageUrl(cardData.card.image_key!) 
-                }}
-                className="w-full h-48 rounded-lg"
-                resizeMode="contain"
-              />
+              (() => {
+                const imageUri = cardData.card.image_url 
+                  ? `${apiClient.getBaseUrl()}${cardData.card.image_url}` 
+                  : apiClient.getCardImageUrl(cardData.card.image_key!);
+                console.log('Image URI:', imageUri);
+                return (
+                  <Image
+                    source={{ uri: imageUri }}
+                    className="w-full h-48 rounded-lg"
+                    resizeMode="contain"
+                    onError={(error) => console.log('Image load error:', error)}
+                  />
+                );
+              })()
             ) : (
               <View className="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
                 <MaterialIcons name="image" size={48} color="#9CA3AF" />
@@ -240,7 +254,7 @@ export default function CardPreview() {
             <TextInput
               value={memo}
               onChangeText={setMemo}
-              placeholder="このカードについてのメモを80文字以内で入力"
+              placeholder="この名刺についてのメモを80文字以内で入力"
               multiline
               maxLength={80}
               className="border border-gray-300 rounded-lg p-3 h-20 text-gray-700"
@@ -275,7 +289,7 @@ export default function CardPreview() {
               <ActivityIndicator size="small" color="white" />
             ) : (
               <Text className="text-white text-center font-semibold text-lg">
-                カードを受け取る
+                名刺を受け取る
               </Text>
             )}
           </TouchableOpacity>

@@ -33,16 +33,9 @@ export default function MyPage() {
 
   return (
     <View className="flex-1 items-center justify-center" style={{ backgroundColor: '#ecebeb' }}>
-      <Text className="text-xl font-bold mb-8">
-        マイページ
-      </Text>
-      
-      {user && (
-        <Text className="text-lg mb-4">
-          {user.name}さん
-        </Text>
-      )}
-      
+      {/* ユーザーのメールのみ表示 */}
+      <Text className="text-lg mb-6">{user?.email || ''}</Text>
+
       <Pressable 
         onPress={handleLogout}
         className="bg-red-500 px-8 py-4 rounded-lg"

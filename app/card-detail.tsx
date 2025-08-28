@@ -131,11 +131,15 @@ export default function CardDetail() {
     <View className="flex-1 items-center justify-center px-10" style={{ backgroundColor: '#ecebeb' }}>
       <Image
         source={{ 
-          uri: exchangeData.card.image_url || `${apiClient.getBaseUrl()}/cards/image/${exchangeData.card.image_key}` 
+          uri: exchangeData.card.image_url?.replace('https://flocka-storage.kazu3jp-purin.workers.dev/', 'https://img.flocka.net/') || `https://img.flocka.net/cards/image/${exchangeData.card.image_key}` || 'https://via.placeholder.com/250',
         }}
         className="w-full border border-gray-300 mb-8"
         style={{ aspectRatio: 1.5, height: 250 }}
         resizeMode="cover"
+        onError={(error) => {
+          console.error("Image load error:", error.nativeEvent);
+          Alert.alert("画像エラー", "画像を読み込むことができませんでした。");
+        }}
       />
       <View className="bg-white p-6 rounded-lg w-full flex-col items-center shadow-gray-200 shadow-sm">
         <Text className="text-2xl font-bold mb-4">{exchangeData.card.card_name}</Text>

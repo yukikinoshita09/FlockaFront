@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { Pressable, Text, View, Image } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 
 export default function CreateCard() {
   return (

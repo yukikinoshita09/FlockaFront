@@ -180,7 +180,7 @@ export default function PagerScrollView() {
                 >
                   <Image
                     source={{ 
-                      uri: item.card.image_url || `${apiClient.getBaseUrl()}/cards/image/${item.card.image_key}` 
+                      uri: item.card.image_url?.replace('https://flocka-storage.kazu3jp-purin.workers.dev/', 'https://img.flocka.net/') || `${apiClient.getBaseUrl()}/cards/image/${item.card.image_key}` 
                     }}
                     style={{ width: '100%', height: 120 }}
                     resizeMode="cover"

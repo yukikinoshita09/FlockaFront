@@ -318,13 +318,13 @@ export default function Home() {
 
             {/* アクションボタン */}
             <View className="flex-row gap-8 justify-center">
-              <Pressable onPress={()=>console.log('ble')} className="items-center">
+              <Pressable onPress={()=>console.log('ble')} className="items-center" disabled={true} accessibilityState={{ disabled: true }} style={{ opacity: 0.5 }}>
                 <View className="bg-white p-4 rounded-full shadow-gray-200 shadow-sm">
                   <MaterialCommunityIcons name="cellphone-wireless" size={24} color="black" />
                 </View>
                 <Text className="mt-2">近くの人と</Text>
               </Pressable>
-              <Pressable onPress={()=>console.log('url')} className="items-center">
+              <Pressable onPress={()=>console.log('url')} className="items-center" disabled={true} accessibilityState={{ disabled: true }} style={{ opacity: 0.5 }}>
                 <View className="bg-white p-4 rounded-full shadow-gray-200 shadow-sm">
                   <Entypo name="link" size={24} color="black" />
                 </View>

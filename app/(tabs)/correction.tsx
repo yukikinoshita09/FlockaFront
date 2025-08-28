@@ -104,6 +104,10 @@ export default function PagerScrollView() {
   const ITEM_MARGIN = 12; // 各アイテムのマージン
   const itemWidth = Math.floor(screenWidth / 2) - ITEM_MARGIN - 8;
 
+  // 名刺の標準比率 (91mm x 55mm) に合わせた画像高さを計算
+  const CARD_RATIO = 91 / 55; // width / height
+  const cardImageHeight = Math.round(itemWidth / CARD_RATIO);
+
   // ローディング中の表示
   if (loading) {
     return (
@@ -181,6 +185,7 @@ export default function PagerScrollView() {
         showsHorizontalScrollIndicator={false}
         onScroll={onScroll}
         scrollEventThrottle={16}
+        style={{ flex: 1 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -190,57 +195,72 @@ export default function PagerScrollView() {
           />
         }
       >
-        {pages.map((page, pageIndex) => (
-          <View key={pageIndex} className="py-10" style={{ width: screenWidth }}>
-            <FlatList
-              data={page}
-              keyExtractor={(item) => item.id}
-              numColumns={2}
-              scrollEnabled={false} // ページ内はスクロールさせない
-              contentContainerStyle={{ paddingHorizontal: 12, alignItems: 'center' }}
-              columnWrapperStyle={{ justifyContent: 'space-between' }}
-              renderItem={({ item }) => (
-                <Pressable
-                  onPress={() => router.push(`/card-detail?id=${item.id}`)}
-                  style={{
-                    width: itemWidth,
-                    marginVertical: 8,
-                    borderWidth: 1,
-                    borderColor: '#E5E7EB',
-                    backgroundColor: '#F3F4F6',
-                    borderRadius: 6,
-                    overflow: 'hidden'
-                  }}
-                >
-                  <Image
-                    source={{ 
-                      uri: item.card.image_url?.replace('https://flocka-storage.kazu3jp-purin.workers.dev/', 'https://img.flocka.net/') || `${apiClient.getBaseUrl()}/cards/image/${item.card.image_key}` 
-                    }}
-                    style={{ width: '100%', height: 120 }}
-                    resizeMode="cover"
-                  />
-                  {/* カード名を表示 */}
-                  <View style={{ padding: 8 }}>
-                    <Text 
-                      style={{ fontSize: 12, fontWeight: '500', color: '#374151' }}
-                      numberOfLines={1}
+        {pages.map((page, pageIndex) => {
+          const pageWithPlaceholders: (CollectionItem | null)[] = [...page];
+          while (pageWithPlaceholders.length < PAGE_SIZE) {
+            pageWithPlaceholders.push(null);
+          }
+
+          return (
+            <View key={pageIndex} className="py-10" style={{ width: screenWidth, flex: 1 }}>
+              <FlatList
+                data={pageWithPlaceholders}
+                keyExtractor={(item, index) => (item ? item.id : `placeholder-${pageIndex}-${index}`)}
+                numColumns={2}
+                scrollEnabled={false} // ページ内はスクロールさせない
+                contentContainerStyle={{ paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center', flexGrow: 1 }}
+                columnWrapperStyle={{ justifyContent: 'space-between' }}
+                renderItem={({ item }) => {
+                  if (!item) {
+                    // placeholder
+                    return (
+                      <View
+                        style={{
+                          width: itemWidth,
+                          height: cardImageHeight,
+                          marginVertical: 12,
+                          marginHorizontal: 6,
+                          backgroundColor: '#E5E7EB',
+                          borderRadius: 10,
+                        }}
+                      />
+                    );
+                  }
+
+                  return (
+                    <Pressable
+                      onPress={() => router.push(`/card-detail?id=${item.id}`)}
+                      style={{
+                        width: itemWidth,
+                        marginVertical: 12,
+                        marginHorizontal: 6,
+                        borderWidth: 0,
+                        backgroundColor: '#fff',
+                        borderRadius: 10,
+                        overflow: 'hidden',
+                        // shadow for iOS
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.12,
+                        shadowRadius: 4,
+                        // elevation for Android
+                        elevation: 3,
+                      }}
                     >
-                      {item.card.card_name}
-                    </Text>
-                    {item.memo && (
-                      <Text 
-                        style={{ fontSize: 10, color: '#6B7280', marginTop: 2 }}
-                        numberOfLines={1}
-                      >
-                        {item.memo}
-                      </Text>
-                    )}
-                  </View>
-                </Pressable>
-              )}
-            />
-          </View>
-        ))}
+                      <Image
+                        source={{ 
+                          uri: item.card.image_url?.replace('https://flocka-storage.kazu3jp-purin.workers.dev/', 'https://img.flocka.net/') || `${apiClient.getBaseUrl()}/cards/image/${item.card.image_key}` 
+                        }}
+                        style={{ width: '100%', height: cardImageHeight }}
+                        resizeMode="cover"
+                      />
+                    </Pressable>
+                  );
+                }}
+              />
+            </View>
+          );
+        })}
       </ScrollView>
 
       {/* ドットインジケータ */}

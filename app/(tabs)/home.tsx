@@ -17,6 +17,8 @@ import {
   View
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
+import QRExchangeLogPreview from "../../components/QRExchangeLogPreview";
+import { useQRExchangeNotifications } from "../../hooks/useQRExchangeNotifications";
 import { apiClient, Card } from "../../utils/api";
 
 // データ型
@@ -24,7 +26,7 @@ type ItemData = {
   id: string;
   image?: any;
   type: 'card' | 'add';
-  card?: Card; // APIから取得したカードデータ
+  card?: Card; // APIから取得した名刺データ
 };
 
 // 単一アイテム
@@ -43,12 +45,12 @@ const Item = ({ item, onPress, isSelected }: ItemProps) => {
         style={{ width: 320, height: 192 }}
       >
         <Entypo name="plus" size={48} color="gray" />
-        <Text className="mt-2 text-gray-600">新しいカードを作成</Text>
+        <Text className="mt-2 text-gray-600">新しい名刺を作成</Text>
       </TouchableOpacity>
     );
   }
 
-  // カードデータがある場合は実際のカード画像を表示
+  // 名刺データがある場合は実際の名刺画像を表示
   if (item.card && item.card.image_key) {
     return (
       <View style={{ width: 320 }}>
@@ -86,7 +88,7 @@ const Item = ({ item, onPress, isSelected }: ItemProps) => {
         />
       </TouchableOpacity>
       <Text className="text-center mt-2 text-lg font-medium text-black">
-        {item.card?.card_name || "サンプルカード"}
+        {item.card?.card_name || "サンプル名刺"}
       </Text>
     </View>
   );
@@ -99,27 +101,34 @@ export default function Home() {
   const [qrValue, setQrValue] = useState<string>("Hello, QR Code!");
   const [isGeneratingQR, setIsGeneratingQR] = useState<boolean>(false);
 
+  // QR交換通知をチェック
+  const { 
+    newExchangeLog, 
+    showPreview, 
+    closePreview 
+  } = useQRExchangeNotifications();
+
   // 画面幅を取得
   const screenWidth = Dimensions.get('window').width;
   const cardWidth = 320;
   const cardSpacing = 12;
   const itemWidth = cardWidth + cardSpacing;
   
-  // 左右の余白を計算（カードが画面中央に来るように）
+  // 左右の余白を計算（名刺が画面中央に来るように）
   const sideMargin = (screenWidth - cardWidth) / 2;
 
-  // 各カードが中央に来る位置を計算
+  // 各名刺が中央に来る位置を計算
   const snapOffsets = cards.map((_, index: number) => {
     return index * itemWidth;
   });
 
-  // カードデータを取得
+  // 名刺データを取得
   const fetchCards = async () => {
     try {
       setIsLoading(true);
       const apiCards = await apiClient.getMyCards();
       
-      // 追加ボタン + APIから取得したカード
+      // 追加ボタン + APIから取得した名刺
       const allItems: ItemData[] = [
         { id: "add", type: "add" },
         ...apiCards.map((card: Card) => ({
@@ -131,18 +140,18 @@ export default function Home() {
       
       setCards(allItems);
       
-      // 初期選択を最初のカードに設定（追加ボタンではない）
+      // 初期選択を最初の名刺に設定（追加ボタンではない）
       if (apiCards.length > 0) {
         const firstCardId = apiCards[0].id;
         setSelectedId(firstCardId);
-        // 初期カードのQRコードを生成
+        // 初期名刺のQRコードを生成
         setTimeout(() => generateQRCode(firstCardId), 100);
       }
     } catch (error) {
       console.error('Failed to fetch cards:', error);
       Alert.alert(
-        "カード取得エラー",
-        "カード情報の取得に失敗しました。再度お試しください。",
+        "名刺取得エラー",
+        "名刺情報の取得に失敗しました。再度お試しください。",
         [{ text: "OK", style: "default" }]
       );
     } finally {
@@ -150,7 +159,7 @@ export default function Home() {
     }
   };
 
-  // 初回ロード時にカードを取得
+  // 初回ロード時に名刺を取得
   useEffect(() => {
     fetchCards();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -175,7 +184,7 @@ export default function Home() {
     }
   };
 
-  // カード選択時にQRコードを更新
+  // 名刺選択時にQRコードを更新
   useEffect(() => {
     if (selectedId && selectedId !== "add") {
       generateQRCode(selectedId);
@@ -211,7 +220,7 @@ export default function Home() {
               )}
               {selectedId && selectedId !== "add" && (
                 <Text className="mt-2 text-sm text-gray-600">
-                  選択中のカードの交換用QR
+                  選択中の名刺の交換用QR
                 </Text>
               )}
             </View>
@@ -235,8 +244,8 @@ export default function Home() {
                   router.push(`/scan-qr?selectedCardId=${selectedId}`);
                 } else {
                   Alert.alert(
-                    "カードを選択してください",
-                    "交換するカードを選択してからQRコードを読み取ってください。",
+                    "名刺を選択してください",
+                    "交換する名刺を選択してからQRコードを読み取ってください。",
                     [{ text: "OK", style: "default" }]
                   );
                 }
@@ -248,12 +257,12 @@ export default function Home() {
               </Pressable>
             </View>
 
-            {/* カード一覧 */}
+            {/* 名刺一覧 */}
             <View className="w-full">
               {isLoading ? (
                 <View className="flex-1 items-center justify-center h-72">
                   <ActivityIndicator size="large" color="#000000" />
-                  <Text className="mt-2">カードを読み込み中...</Text>
+                  <Text className="mt-2">名刺を読み込み中...</Text>
                 </View>
               ) : (
                 <FlatList
@@ -272,7 +281,7 @@ export default function Home() {
                   snapToOffsets={snapOffsets}
                   decelerationRate="fast"
                   pagingEnabled={false}
-                  initialScrollIndex={cards.length > 1 ? 1 : 0} // 最初のカードを中央に表示
+                  initialScrollIndex={cards.length > 1 ? 1 : 0} // 最初の名刺を中央に表示
                   getItemLayout={(data, index) => ({
                     length: itemWidth,
                     offset: itemWidth * index,
@@ -284,6 +293,13 @@ export default function Home() {
           </View>
         </View>
       </ScrollView>
+
+      {/* QR交換通知プレビュー */}
+      <QRExchangeLogPreview
+        visible={showPreview}
+        onClose={closePreview}
+        exchangeLog={newExchangeLog}
+      />
     </SafeAreaView>
   );
 }

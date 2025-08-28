@@ -49,7 +49,7 @@ export default function ScanQr() {
     if (!selectedCardId) {
       Alert.alert(
         "エラー",
-        "交換するカードが選択されていません。",
+        "交換する名刺が選択されていません。",
         [{ text: "OK", onPress: () => router.back() }]
       );
       return;
@@ -60,7 +60,7 @@ export default function ScanQr() {
 
     console.log('QR Code processing:', qrData);
 
-    // カードプレビューページに遷移
+    // 名刺プレビューページに遷移
     router.push({
       pathname: '/card-preview',
       params: {

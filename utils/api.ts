@@ -224,25 +224,24 @@ export class ApiClient {
     return this.baseUrl;
   }
 
-  // QRコード交換用データを生成
+  // QRコード交換用データを生成（v1.3.0対応）
   async generateQRCode(cardId: string, expiresIn: number = 3600): Promise<{
     qrData: string;
-    qrToken: string;
-    cardId: string;
+    token: string;
     cardName: string;
     expiresAt: string;
-    expiresIn: number;
   }> {
     const response = await this.request<{
       qrData: string;
-      qrToken: string;
-      cardId: string;
+      token: string;
       cardName: string;
       expiresAt: string;
-      expiresIn: number;
-    }>(`/cards/${cardId}/generate-qr`, {
+    }>('/exchanges/qr/generate', {
       method: 'POST',
-      body: JSON.stringify({ expiresIn })
+      body: JSON.stringify({ 
+        cardId,
+        expiresIn 
+      })
     });
     
     if (response.success && response.data) {
@@ -252,17 +251,22 @@ export class ApiClient {
     throw new Error(response.error || 'Failed to generate QR code');
   }
 
-  // QRコードを使った相互カード交換
+  // QRコードを使った即時カード交換（v1.3.0対応）
   async exchangeWithQRCode(qrData: string, myCardId: string, memo?: string, locationName?: string, latitude?: number, longitude?: number): Promise<{
     success: boolean;
-    exchangeId: string;
-    collectedCard: Card;
+    exchangeLogId: string;
+    exchangedCards: {
+      yourNewCard: Card;
+      yourCardSent: Card;
+    };
     message: string;
   }> {
     const response = await this.request<{
-      success: boolean;
-      exchangeId: string;
-      collectedCard: Card;
+      exchangeLogId: string;
+      exchangedCards: {
+        yourNewCard: Card;
+        yourCardSent: Card;
+      };
       message: string;
     }>('/exchanges/qr', {
       method: 'POST',
@@ -277,7 +281,12 @@ export class ApiClient {
     });
     
     if (response.success && response.data) {
-      return response.data;
+      return {
+        success: true,
+        exchangeLogId: response.data.exchangeLogId,
+        exchangedCards: response.data.exchangedCards,
+        message: response.data.message || 'QR交換が完了しました'
+      };
     }
     
     throw new Error(response.error || 'Failed to exchange cards');
@@ -329,6 +338,43 @@ export class ApiClient {
     }
     
     throw new Error(response.error || 'Failed to get QR token info');
+  }
+
+  // QR交換ログを取得（読み取られた側の通知用）
+  async getQRExchangeLogs(): Promise<{
+    logs: {
+      id: string;
+      scannerUser: {
+        id: string;
+        name: string;
+      };
+      scannerCard: Card;
+      memo?: string;
+      created_at: string;
+    }[];
+    total: number;
+    newLogs: number;
+  }> {
+    const response = await this.request<{
+      logs: {
+        id: string;
+        scannerUser: {
+          id: string;
+          name: string;
+        };
+        scannerCard: Card;
+        memo?: string;
+        created_at: string;
+      }[];
+      total: number;
+      newLogs: number;
+    }>('/exchanges/qr-logs');
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    throw new Error(response.error || 'Failed to get QR exchange logs');
   }
 }
 

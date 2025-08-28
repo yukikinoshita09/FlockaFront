@@ -61,24 +61,24 @@ export default function Home() {
       <View className="flex-col items-center gap-10">
         <QRCode value="Hello, QR Code!" size={200} quietZone={20} />
         <View className="flex-row gap-8 mb-20">
-          <View className="items-center">
+          <Pressable onPress={()=>console.log('ble')} className="items-center">
             <View className="bg-white p-4 rounded-full">
               <MaterialCommunityIcons name="cellphone-wireless" size={24} color="black" />
             </View>
             <Text className="mt-2">近くの人と</Text>
-          </View>
-          <View className="items-center">
+          </Pressable>
+          <Pressable onPress={()=>console.log('url')} className="items-center">
             <View className="bg-white p-4 rounded-full">    
               <Entypo name="link" size={24} color="black" />
             </View>
             <Text className="mt-2">コードを送る</Text>
-          </View>
-          <View className="items-center">
+          </Pressable>
+          <Pressable onPress={()=>router.push('/scan-qr')} className="items-center">
             <View className="bg-white p-4 rounded-full">    
               <MaterialCommunityIcons name="qrcode-scan" size={30} color="black" />
             </View>
             <Text className="mt-2">読み取る</Text>
-          </View>
+          </Pressable>
         </View>
       </View>
       <View className="flex-row items-center mb-4">

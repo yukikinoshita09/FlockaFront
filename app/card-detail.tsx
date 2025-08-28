@@ -126,8 +126,9 @@ export default function CardDetail() {
     );
   }
 
+  // 背景色を#ecebebに変更
   return (
-    <View className="flex-1 items-center justify-center px-10 bg-gray-100">
+    <View className="flex-1 items-center justify-center px-10" style={{ backgroundColor: '#ecebeb' }}>
       <Image
         source={{ 
           uri: exchangeData.card.image_url || `${apiClient.getBaseUrl()}/cards/image/${exchangeData.card.image_key}` 

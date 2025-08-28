@@ -175,8 +175,9 @@ export default function CardPreview() {
 
   return (
     <KeyboardAvoidingView 
-      className="flex-1 bg-gray-50"
+      className="flex-1"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ backgroundColor: '#ecebeb' }}
     >
       <ScrollView className="flex-1">
         {/* ヘッダー */}

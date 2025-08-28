@@ -231,7 +231,7 @@ export default function Home() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: '#ecebeb' }}>
       <ScrollView 
         contentContainerStyle={{ flexGrow: 1 }}
         className="flex-1"

@@ -24,6 +24,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+    backgroundColor: '#ecebeb', // 背景色を追加
   },
   link: {
     marginTop: 15,

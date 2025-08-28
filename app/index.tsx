@@ -32,7 +32,7 @@ export default function HomeScreen() {
 
   // 未認証の場合はスタート画面を表示
   return (
-    <View className="flex-1 items-center justify-center ">
+    <View className="flex-1 items-center justify-center" style={{ backgroundColor: '#ecebeb' }}>
       <Image source={require("../assets/images/flocka-app-icon.png")}
       className='w-28 h-28'
       resizeMode='contain'/>

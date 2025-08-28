@@ -3,7 +3,7 @@ import { Pressable, Text, View, Image } from "react-native";
 
 export default function CreateCard() {
   return (
-    <View className="flex-1 items-center justify-center ">
+    <View className="flex-1 items-center justify-center" style={{ backgroundColor: '#ecebeb' }}>
       <Text className="text-2xl font-bold">
         名刺作成
       </Text>

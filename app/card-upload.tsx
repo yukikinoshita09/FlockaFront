@@ -65,7 +65,7 @@ export default function CardUpload() {
   };
 
   return (
-    <View className="flex-1 items-center justify-center">
+    <View className="flex-1 items-center justify-center" style={{ backgroundColor: '#ecebeb' }}>
       <View className="text-start mb-10">
         <Text className="text-xl font-bold">名刺を選択</Text>
         <Text className="text-gray-400">名刺サイズ（91×55mm）で切り取り・自動調整されます</Text>

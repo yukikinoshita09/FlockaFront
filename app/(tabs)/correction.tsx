@@ -145,8 +145,9 @@ export default function PagerScrollView() {
     );
   }
 
+  // 背景色を#ecebebに変更
   return (
-    <View className="flex-1 items-center justify-center">
+    <View className="flex-1 items-center justify-center" style={{ backgroundColor: '#ecebeb' }}>
       {/* 横スクロールページャー */}
       <ScrollView
         horizontal

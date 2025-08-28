@@ -121,7 +121,7 @@ const Item = ({ item, onPress, isSelected }: ItemProps) => {
         style={{
           width: cardWidth,
           height: cardHeight,
-          boxShadow: isSelected ? '0 0 0 4px #6d6d6d' : undefined, // 選択時に青い枠を表示
+          boxShadow: isSelected ? '0 0 0 4px #6d6d6d' : undefined, // 選択時にグレーの枠を表示
           borderRadius: 12, // 角丸
           overflow: 'hidden', // 画像が角丸に収まるように
         }}
@@ -298,12 +298,30 @@ export default function Home() {
             {/* QRコード表示エリア */}
             <View className="items-center">
               {isGeneratingQR ? (
-                <View className="w-52 h-52 items-center justify-center bg-white rounded-lg border border-gray-200 shadow-gray-200 shadow-sm">
+                <View
+                  className="w-52 h-52 items-center justify-center bg-white rounded-lg"
+                  style={{
+                    shadowColor: "#000",
+                    shadowOffset: { width: 2, height: 2 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 3,
+                    elevation: 4,
+                  }}
+                >
                   <ActivityIndicator size="large" color="#000000" />
                   <Text className="mt-2 text-sm text-gray-600">QR生成中...</Text>
                 </View>
               ) : (
-                <View className="shadow-md shadow-gray-200 rounded-lg">
+                <View
+                  style={{
+                    shadowColor: "#000",
+                    shadowOffset: { width: 2, height: 2 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 3,
+                    elevation: 4,
+                    borderRadius: 12,
+                  }}
+                >
                   <View className="bg-white rounded-lg overflow-hidden">
                     <QRCode value={qrValue} size={200} quietZone={20} />
                   </View>
@@ -318,34 +336,38 @@ export default function Home() {
 
             {/* アクションボタン */}
             <View className="flex-row gap-8 justify-center">
-              <Pressable onPress={()=>console.log('ble')} className="items-center">
-                <View className="bg-white p-4 rounded-full shadow-gray-200 shadow-sm">
-                  <MaterialCommunityIcons name="cellphone-wireless" size={24} color="black" />
-                </View>
-                <Text className="mt-2">近くの人と</Text>
-              </Pressable>
-              <Pressable onPress={()=>console.log('url')} className="items-center">
-                <View className="bg-white p-4 rounded-full shadow-gray-200 shadow-sm">
-                  <Entypo name="link" size={24} color="black" />
-                </View>
-                <Text className="mt-2">コードを送る</Text>
-              </Pressable>
-              <Pressable onPress={()=>{
-                if (selectedId && selectedId !== "add") {
-                  router.push(`/scan-qr?selectedCardId=${selectedId}`);
-                } else {
-                  Alert.alert(
-                    "名刺を選択してください",
-                    "交換する名刺を選択してからQRコードを読み取ってください。",
-                    [{ text: "OK", style: "default" }]
-                  );
+              {[
+                { icon: <MaterialCommunityIcons name="cellphone-wireless" size={24} color="black" />, label: "近くの人と", onPress: () => console.log('ble') },
+                { icon: <Entypo name="link" size={24} color="black" />, label: "コードを送る", onPress: () => console.log('url') },
+                { icon: <MaterialCommunityIcons name="qrcode-scan" size={24} color="black" />, label: "読み取る", onPress: () => {
+                    if (selectedId && selectedId !== "add") {
+                      router.push(`/scan-qr?selectedCardId=${selectedId}`);
+                    } else {
+                      Alert.alert(
+                        "名刺を選択してください",
+                        "交換する名刺を選択してからQRコードを読み取ってください。",
+                        [{ text: "OK", style: "default" }]
+                      );
+                    }
+                  }
                 }
-              }} className="items-center">
-                <View className="bg-white p-4 rounded-full shadow-gray-200 shadow-sm">    
-                  <MaterialCommunityIcons name="qrcode-scan" size={24} color="black" />
-                </View>
-                <Text className="mt-2">読み取る</Text>
-              </Pressable>
+              ].map((btn, index) => (
+                <Pressable key={index} onPress={btn.onPress} className="items-center">
+                  <View
+                    className="bg-white p-4 rounded-full"
+                    style={{
+                      shadowColor: "#000",
+                      shadowOffset: { width: 2, height: 2 }, // 右下にオフセット
+                      shadowOpacity: 0.15,                    // 薄め
+                      shadowRadius: 3,                         // ぼかし
+                      elevation: 4,                            // Android用
+                    }}
+                  >
+                    {btn.icon}
+                  </View>
+                  <Text className="mt-2">{btn.label}</Text>
+                </Pressable>
+              ))}
             </View>
 
             {/* 名刺一覧 */}

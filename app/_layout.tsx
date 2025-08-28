@@ -31,7 +31,7 @@ export default function RootLayout() {
               headerTitle: () => (
                 <Image
                   source={require('../assets/images/flocka-font.png')}
-                  style={{ width: 110, height: 30, resizeMode: 'contain' }}
+                  style={{ width: 110, height: 30, resizeMode: 'contain', marginTop: 5, marginBottom: 10}}
                 />
               ),
               headerTitleAlign: 'center',

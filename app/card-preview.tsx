@@ -2,17 +2,17 @@ import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    KeyboardAvoidingView,
-    Linking,
-    Platform,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { apiClient, Card } from '../utils/api';
 
@@ -175,8 +175,9 @@ export default function CardPreview() {
 
   return (
     <KeyboardAvoidingView 
-      className="flex-1 bg-gray-50"
+      className="flex-1"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ backgroundColor: '#ecebeb' }}
     >
       <ScrollView className="flex-1">
         {/* ヘッダー */}
@@ -224,7 +225,7 @@ export default function CardPreview() {
           )}
 
           {/* リンク情報 */}
-          {cardData.card.links && cardData.card.links.length > 0 && (
+          {Array.isArray(cardData.card.links) && cardData.card.links.length > 0 && (
             <View className="bg-white rounded-lg shadow-sm p-4 mb-4">
               <Text className="text-lg font-semibold text-gray-800 mb-3">リンク</Text>
               {cardData.card.links.map((link, index) => (

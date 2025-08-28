@@ -32,7 +32,7 @@ export default function MyPage() {
   };
 
   return (
-    <View className="flex-1 items-center justify-center">
+    <View className="flex-1 items-center justify-center" style={{ backgroundColor: '#ecebeb' }}>
       <Text className="text-xl font-bold mb-8">
         マイページ
       </Text>

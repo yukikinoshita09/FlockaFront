@@ -1,7 +1,8 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -10,6 +11,7 @@ import {
   Image,
   ListRenderItem,
   Pressable,
+  RefreshControl,
   SafeAreaView,
   ScrollView,
   Text,
@@ -42,7 +44,12 @@ const Item = ({ item, onPress, isSelected }: ItemProps) => {
       <TouchableOpacity
         onPress={() => router.navigate('/create-card')}
         className="w-80 h-48 border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center bg-gray-100"
-        style={{ width: 320, height: 192 }}
+        style={{
+          width: cardWidth,
+          height: cardHeight,
+          borderRadius: 12, // 角丸
+          marginTop: 8, // 上側の余白を追加
+        }}
       >
         <Entypo name="plus" size={48} color="gray" />
         <Text className="mt-2 text-gray-600">新しい名刺を作成</Text>
@@ -50,56 +57,108 @@ const Item = ({ item, onPress, isSelected }: ItemProps) => {
     );
   }
 
-  // 名刺データがある場合は実際の名刺画像を表示
   if (item.card && item.card.image_key) {
     return (
-      <View style={{ width: 320 }}>
+      <View
+        style={{
+          width: cardWidth,
+          alignItems: 'center', // 上側のズレを修正
+          marginTop: 8, // 上側の余白を追加
+        }}
+      >
         <TouchableOpacity
           onPress={onPress}
-          className={`w-80 ${isSelected ? 'border-4 border-blue-500' : ''}`}
-          style={{ width: 320 }}
+          onLongPress={() => {
+            // 長押しで編集画面に遷移
+            router.push(`/edit-card?id=${item.card?.id}`);
+          }}
+          className="w-80"
+          style={{
+            width: cardWidth,
+            height: cardHeight,
+            boxShadow: isSelected ? '0 0 0 4px #6d6d6d' : undefined, // 選択時に青い枠を表示
+            borderRadius: 12, // 角丸
+            overflow: 'hidden', // 画像が角丸に収まるように
+          }}
         >
           <Image
             source={{ uri: apiClient.getCardImageUrl(item.card.image_key) }}
             resizeMode="contain"
             className="w-full h-48"
-            style={{ width: 320, height: 192 }}
+            style={{ width: cardWidth, height: cardHeight }}
           />
         </TouchableOpacity>
-        <Text className="text-center mt-2 text-lg font-medium text-black">
-          {item.card.card_name}
-        </Text>
+        <TouchableOpacity 
+          onPress={() => router.push(`/edit-card?id=${item.card?.id}`)}
+          className="flex-row items-center mt-2"
+        >
+          <Text className="text-center text-lg font-medium text-black mr-1">
+            {item.card.card_name}
+          </Text>
+          <MaterialIcons name="edit" size={16} color="#6B7280" />
+        </TouchableOpacity>
       </View>
     );
   }
 
-  // フォールバック（サンプル画像）
   return (
-    <View style={{ width: 320 }}>
+    <View
+      style={{
+        width: cardWidth,
+        alignItems: 'center', // 上側のズレを修正
+        marginTop: 8, // 上側の余白を追加
+      }}
+    >
       <TouchableOpacity
         onPress={onPress}
-        className={`w-80 ${isSelected ? 'border-4 border-blue-500' : ''}`}
-        style={{ width: 320 }}
+        onLongPress={() => {
+          // 長押しで編集画面に遷移（カードIDがある場合のみ）
+          if (item.card?.id) {
+            router.push(`/edit-card?id=${item.card.id}`);
+          }
+        }}
+        className="w-80"
+        style={{
+          width: cardWidth,
+          height: cardHeight,
+          boxShadow: isSelected ? '0 0 0 4px #6d6d6d' : undefined, // 選択時に青い枠を表示
+          borderRadius: 12, // 角丸
+          overflow: 'hidden', // 画像が角丸に収まるように
+        }}
       >
         <Image
           source={require("../../assets/images/sample-profile-card.png")}
           resizeMode="contain"
           className="w-full"
+          style={{ height: cardHeight }}
         />
       </TouchableOpacity>
-      <Text className="text-center mt-2 text-lg font-medium text-black">
-        {item.card?.card_name || "サンプル名刺"}
-      </Text>
+      <View className="flex-row items-center mt-2">
+        <Text className="text-center text-lg font-medium text-black mr-1">
+          {item.card?.card_name || "サンプル名刺"}
+        </Text>
+        {item.card?.id && (
+          <TouchableOpacity onPress={() => router.push(`/edit-card?id=${item.card?.id}`)}>
+            <MaterialIcons name="edit" size={16} color="#6B7280" />
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 };
+
+// 名刺サイズの比率を55mm×91mmに変更
+const cardWidth = 320;
+const cardHeight = Math.round(cardWidth / 1.65); // 高さを計算
 
 export default function Home() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [cards, setCards] = useState<ItemData[]>([{ id: "add", type: "add" }]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [qrValue, setQrValue] = useState<string>("Hello, QR Code!");
   const [isGeneratingQR, setIsGeneratingQR] = useState<boolean>(false);
+  const [hasInitialized, setHasInitialized] = useState<boolean>(false);
 
   // QR交換通知をチェック
   const { 
@@ -110,7 +169,6 @@ export default function Home() {
 
   // 画面幅を取得
   const screenWidth = Dimensions.get('window').width;
-  const cardWidth = 320;
   const cardSpacing = 12;
   const itemWidth = cardWidth + cardSpacing;
   
@@ -122,10 +180,32 @@ export default function Home() {
     return index * itemWidth;
   });
 
-  // 名刺データを取得
-  const fetchCards = async () => {
+  // QRコードを生成
+  const generateQRCode = useCallback(async (cardId: string) => {
+    if (!cardId || cardId === "add") return;
+    
     try {
-      setIsLoading(true);
+      setIsGeneratingQR(true);
+      const qrData = await apiClient.generateQRCode(cardId);
+      setQrValue(qrData.qrData);
+    } catch (error) {
+      console.error('Failed to generate QR code:', error);
+      Alert.alert(
+        "QRコード生成エラー",
+        "QRコードの生成に失敗しました。再度お試しください。",
+        [{ text: "OK", style: "default" }]
+      );
+    } finally {
+      setIsGeneratingQR(false);
+    }
+  }, []);
+
+  // 名刺データを取得
+  const fetchCards = useCallback(async (isRefresh: boolean = false) => {
+    try {
+      if (!isRefresh) {
+        setIsLoading(true);
+      }
       const apiCards = await apiClient.getMyCards();
       
       // 追加ボタン + APIから取得した名刺
@@ -144,8 +224,7 @@ export default function Home() {
       if (apiCards.length > 0) {
         const firstCardId = apiCards[0].id;
         setSelectedId(firstCardId);
-        // 初期名刺のQRコードを生成
-        setTimeout(() => generateQRCode(firstCardId), 100);
+        // QRコードの生成は selectedId の useEffect で行う
       }
     } catch (error) {
       console.error('Failed to fetch cards:', error);
@@ -155,8 +234,18 @@ export default function Home() {
         [{ text: "OK", style: "default" }]
       );
     } finally {
-      setIsLoading(false);
+      if (!isRefresh) {
+        setIsLoading(false);
+        setHasInitialized(true);
+      }
     }
+  }, []); // generateQRCodeの依存関係を削除
+
+  // プルトゥリフレッシュの処理
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchCards(true);
+    setRefreshing(false);
   };
 
   // 初回ロード時に名刺を取得
@@ -164,32 +253,22 @@ export default function Home() {
     fetchCards();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // QRコードを生成
-  const generateQRCode = async (cardId: string) => {
-    if (!cardId || cardId === "add") return;
-    
-    try {
-      setIsGeneratingQR(true);
-      const qrData = await apiClient.generateQRCode(cardId);
-      setQrValue(qrData.qrData);
-    } catch (error) {
-      console.error('Failed to generate QR code:', error);
-      Alert.alert(
-        "QRコード生成エラー",
-        "QRコードの生成に失敗しました。再度お試しください。",
-        [{ text: "OK", style: "default" }]
-      );
-    } finally {
-      setIsGeneratingQR(false);
-    }
-  };
+  // 画面がフォーカスされた時にデータを更新（編集から戻った時など）
+  useFocusEffect(
+    useCallback(() => {
+      // 初期化完了後で、かつリフレッシュ中でない場合のみ実行
+      if (hasInitialized && !refreshing) {
+        fetchCards(true); // リフレッシュとして実行
+      }
+    }, [hasInitialized, refreshing, fetchCards])
+  );
 
   // 名刺選択時にQRコードを更新
   useEffect(() => {
     if (selectedId && selectedId !== "add") {
       generateQRCode(selectedId);
     }
-  }, [selectedId]);
+  }, [selectedId, generateQRCode]);
 
   const renderItem: ListRenderItem<ItemData> = ({ item }) => (
     <Item
@@ -200,11 +279,19 @@ export default function Home() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: '#ecebeb' }}>
       <ScrollView 
         contentContainerStyle={{ flexGrow: 1 }}
         className="flex-1"
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#000000']} // Android
+            tintColor="#000000" // iOS
+          />
+        }
       >
         <View className="flex-1 items-center justify-center px-4 py-6">
           <View className="flex-col items-center gap-8 w-full">

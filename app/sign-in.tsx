@@ -200,7 +200,7 @@ export default function SignIn() {
   };
 
   return (
-    <View className="flex-1 items-center justify-center">
+    <View className="flex-1 items-center justify-center" style={{ backgroundColor: '#ecebeb' }}>
       <View className="items-center">
         <Image
           source={require("../assets/images/flocka-app-icon.png")}

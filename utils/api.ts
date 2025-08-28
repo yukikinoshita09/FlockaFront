@@ -214,6 +214,146 @@ export class ApiClient {
     throw new Error(response.error || 'Failed to get cards');
   }
 
+  // 新しいカードを作成
+  async createCard(cardData: {
+    card_name: string;
+    bio?: string;
+    image_key?: string;
+    links: {
+      title: string;
+      url: string;
+    }[];
+  }): Promise<Card> {
+    const response = await this.request<Card>('/cards', {
+      method: 'POST',
+      body: JSON.stringify(cardData)
+    });
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    throw new Error(response.error || 'Failed to create card');
+  }
+
+  // カード情報を更新
+  async updateCard(cardId: string, cardData: {
+    card_name: string;
+    bio?: string;
+    image_key?: string;
+    links: {
+      title: string;
+      url: string;
+    }[];
+  }): Promise<Card> {
+    const response = await this.request<Card>(`/cards/${cardId}`, {
+      method: 'PUT',
+      body: JSON.stringify(cardData)
+    });
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    throw new Error(response.error || 'Failed to update card');
+  }
+
+  // カードを削除
+  async deleteCard(cardId: string): Promise<void> {
+    const response = await this.request(`/cards/${cardId}`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to delete card');
+    }
+  }
+
+  // 画像ファイルを直接アップロード
+  async uploadImage(imageUri: string): Promise<{ imageKey: string; imageUrl: string }> {
+    try {
+      console.log('Starting image upload for URI:', imageUri);
+      
+      // ネットワーク接続確認
+      const connectionTest = await this.testConnection();
+      if (!connectionTest) {
+        throw new Error('APIサーバーに接続できません');
+      }
+
+      // 直接アップロード方式（正しいエンドポイント使用）
+      return await this.uploadImageDirect(imageUri);
+      
+    } catch (error) {
+      console.error('Image upload error:', error);
+      
+      // より詳細なエラーメッセージを提供
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('アップロードがタイムアウトしました。ネットワーク接続を確認してください。');
+      } else if (error instanceof TypeError && error.message.includes('Network request failed')) {
+        throw new Error('ネットワーク接続に問題があります。インターネット接続を確認してください。');
+      } else if (error instanceof Error) {
+        throw new Error(`画像アップロードエラー: ${error.message}`);
+      } else {
+        throw new Error('画像のアップロードに失敗しました');
+      }
+    }
+  }
+
+  // 直接アップロード（正しいエンドポイント /cards/upload）
+  private async uploadImageDirect(imageUri: string): Promise<{ imageKey: string; imageUrl: string }> {
+    console.log('Uploading image directly to /cards/upload');
+    
+    // React Nativeでは画像URIを直接FormDataに追加できる
+    const formData = new FormData();
+    
+    // ファイル名を生成
+    const fileName = `card-${Date.now()}.jpg`;
+    
+    // React Nativeの場合、URIを直接使用
+    formData.append('file', {
+      uri: imageUri,
+      type: 'image/jpeg',
+      name: fileName,
+    } as any);
+
+    console.log('FormData created, uploading to:', `${this.baseUrl}/cards/upload`);
+
+    // APIに送信（タイムアウト制御付き）
+    const token = await tokenManager.get();
+    console.log('Token retrieved, making upload request...');
+    
+    // タイムアウト制御付きのfetch
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒タイムアウト
+    
+    const uploadResponse = await fetch(`${this.baseUrl}/cards/upload`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        // Content-Typeは自動設定されるため削除
+      },
+      body: formData,
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+
+    console.log('Upload response status:', uploadResponse.status);
+    
+    const result = await uploadResponse.json();
+    console.log('Upload response data:', result);
+    
+    if (!uploadResponse.ok || !result.success) {
+      throw new Error(result.error || `Upload failed with status ${uploadResponse.status}`);
+    }
+
+    // APIのレスポンス形式に合わせて変換
+    return {
+      imageKey: result.data.fileKey,
+      imageUrl: `/cards/image/${result.data.fileKey}`
+    };
+  }
+
   // カード画像のURLを生成
   getCardImageUrl(imageKey: string): string {
     return `${this.baseUrl}/cards/image/${imageKey}`;
@@ -375,6 +515,76 @@ export class ApiClient {
     }
     
     throw new Error(response.error || 'Failed to get QR exchange logs');
+  }
+
+  // コレクション一覧を取得
+  async getCollection(): Promise<{
+    id: string;
+    card: Card;
+    memo?: string;
+    location_name?: string;
+    created_at: string;
+  }[]> {
+    const response = await this.request<{
+      collections: {
+        id: string;
+        card: Card;
+        memo?: string;
+        location: string | null;
+        collected_at: string;
+      }[];
+      total: number;
+    }>('/exchanges');
+    
+    if (response.success && response.data) {
+      // APIレスポンス構造に合わせて変換
+      return response.data.collections.map(item => ({
+        id: item.id,
+        card: item.card,
+        memo: item.memo,
+        location_name: item.location || undefined,
+        created_at: item.collected_at
+      }));
+    }
+    
+    throw new Error(response.error || 'Failed to get collection');
+  }
+
+  // コレクション詳細を取得
+  // 注意: このエンドポイントは現在404を返すため使用していません
+  async getExchangeDetail(exchangeId: string): Promise<{
+    id: string;
+    card: Card;
+    memo?: string;
+    location_name?: string;
+    created_at: string;
+  }> {
+    const response = await this.request<{
+      id: string;
+      card: Card;
+      memo?: string;
+      location_name?: string;
+      created_at: string;
+    }>(`/exchanges/${exchangeId}`);
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    throw new Error(response.error || 'Failed to get exchange detail');
+  }
+
+  // コレクションのメモを更新
+  // 注意: このエンドポイントは現在404を返す可能性があります
+  async updateExchangeMemo(exchangeId: string, memo: string): Promise<void> {
+    const response = await this.request(`/exchanges/${exchangeId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ memo })
+    });
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to update memo');
+    }
   }
 }
 

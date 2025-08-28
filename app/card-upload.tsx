@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { Pressable, Text, View, Image } from "react-native";
+import { Pressable, Text, View, Image, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import Entypo from '@expo/vector-icons/Entypo';
@@ -17,6 +17,17 @@ export default function CardUpload() {
     if (!result.canceled) {
       setImage(result.assets[0].uri);
     }
+  };
+
+  const handleNext = () => {
+    if (!image) {
+      Alert.alert("画像が選択されていません", "アップロードする画像を選択してください。");
+      return;
+    }
+    router.push({
+      pathname: "/card-upload-flow/input-info",
+      params: { imageUri: image },
+    });
   };
 
   return (
@@ -48,7 +59,7 @@ export default function CardUpload() {
           <Text className="text-xl font-bold">キャンセル</Text>
         </Pressable>
         <Pressable
-          onPress={() => console.log('Next')}
+          onPress={handleNext}
           className="flex-1 py-3 rounded bg-black items-center justify-center"
         >
           <Text className="text-xl font-bold text-white">次へ</Text>

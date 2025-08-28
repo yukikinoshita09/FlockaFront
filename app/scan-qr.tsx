@@ -1,9 +1,11 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { Alert, Button, Text, View } from 'react-native';
 
 export default function ScanQr() {
   const [permission, requestPermission] = useCameraPermissions();
+  const [isScanned, setIsScanned] = useState(false);
   const { selectedCardId } = useLocalSearchParams<{ selectedCardId: string }>();
 
   if (!permission) {
@@ -21,6 +23,11 @@ export default function ScanQr() {
 
   // QRコードスキャン後の処理
   const handleQRCodeScanned = (qrData: string) => {
+    // 既にスキャン済みの場合は処理しない
+    if (isScanned) {
+      return;
+    }
+
     if (!selectedCardId) {
       Alert.alert(
         "エラー",
@@ -29,6 +36,9 @@ export default function ScanQr() {
       );
       return;
     }
+
+    // スキャンフラグを立てて重複を防ぐ
+    setIsScanned(true);
 
     // カードプレビューページに遷移
     router.push({
@@ -48,7 +58,7 @@ export default function ScanQr() {
         barcodeScannerSettings={{
           barcodeTypes: ['qr'],
         }}
-        onBarcodeScanned={({ data }) => {
+        onBarcodeScanned={isScanned ? undefined : ({ data }) => {
           console.log('QR Code scanned:', data);
           handleQRCodeScanned(data);
         }}

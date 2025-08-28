@@ -93,6 +93,8 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [cards, setCards] = useState<ItemData[]>([{ id: "add", type: "add" }]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [qrValue, setQrValue] = useState<string>("Hello, QR Code!");
+  const [isGeneratingQR, setIsGeneratingQR] = useState<boolean>(false);
 
   // 画面幅を取得
   const screenWidth = Dimensions.get('window').width;
@@ -128,7 +130,10 @@ export default function Home() {
       
       // 初期選択を最初のカードに設定（追加ボタンではない）
       if (apiCards.length > 0) {
-        setSelectedId(apiCards[0].id);
+        const firstCardId = apiCards[0].id;
+        setSelectedId(firstCardId);
+        // 初期カードのQRコードを生成
+        setTimeout(() => generateQRCode(firstCardId), 100);
       }
     } catch (error) {
       console.error('Failed to fetch cards:', error);
@@ -145,7 +150,34 @@ export default function Home() {
   // 初回ロード時にカードを取得
   useEffect(() => {
     fetchCards();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // QRコードを生成
+  const generateQRCode = async (cardId: string) => {
+    if (!cardId || cardId === "add") return;
+    
+    try {
+      setIsGeneratingQR(true);
+      const qrData = await apiClient.generateQRCode(cardId);
+      setQrValue(qrData.qrData);
+    } catch (error) {
+      console.error('Failed to generate QR code:', error);
+      Alert.alert(
+        "QRコード生成エラー",
+        "QRコードの生成に失敗しました。再度お試しください。",
+        [{ text: "OK", style: "default" }]
+      );
+    } finally {
+      setIsGeneratingQR(false);
+    }
+  };
+
+  // カード選択時にQRコードを更新
+  useEffect(() => {
+    if (selectedId && selectedId !== "add") {
+      generateQRCode(selectedId);
+    }
+  }, [selectedId]);
 
   const renderItem: ListRenderItem<ItemData> = ({ item }) => (
     <Item
@@ -158,7 +190,21 @@ export default function Home() {
   return (
     <View className="flex-1 items-center justify-center bg-gray-50">
       <View className="flex-col items-center gap-10">
-        <QRCode value="Hello, QR Code!" size={200} quietZone={20} />
+        <View className="items-center">
+          {isGeneratingQR ? (
+            <View className="w-52 h-52 items-center justify-center bg-white rounded-lg border border-gray-200">
+              <ActivityIndicator size="large" color="#000000" />
+              <Text className="mt-2 text-sm text-gray-600">QR生成中...</Text>
+            </View>
+          ) : (
+            <QRCode value={qrValue} size={200} quietZone={20} />
+          )}
+          {selectedId && selectedId !== "add" && (
+            <Text className="mt-2 text-sm text-gray-600">
+              選択中のカードの交換用QR
+            </Text>
+          )}
+        </View>
         <View className="flex-row gap-8 mb-20">
           <View className="items-center">
             <View className="bg-white p-4 rounded-full">

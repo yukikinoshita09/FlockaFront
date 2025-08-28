@@ -215,6 +215,34 @@ export class ApiClient {
   getCardImageUrl(imageKey: string): string {
     return `${this.baseUrl}/cards/image/${imageKey}`;
   }
+
+  // QRコード交換用データを生成
+  async generateQRCode(cardId: string, expiresIn: number = 3600): Promise<{
+    qrData: string;
+    qrToken: string;
+    cardId: string;
+    cardName: string;
+    expiresAt: string;
+    expiresIn: number;
+  }> {
+    const response = await this.request<{
+      qrData: string;
+      qrToken: string;
+      cardId: string;
+      cardName: string;
+      expiresAt: string;
+      expiresIn: number;
+    }>(`/cards/${cardId}/generate-qr`, {
+      method: 'POST',
+      body: JSON.stringify({ expiresIn })
+    });
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    throw new Error(response.error || 'Failed to generate QR code');
+  }
 }
 
 export const apiClient = new ApiClient();

@@ -128,7 +128,7 @@ export class ApiClient {
   }
 
   // 新規登録
-  async register(email: string, name: string, password: string): Promise<void> {
+  async register(email: string, name: string | null, password: string): Promise<void> {
     const response = await this.request('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ email, name, password }),

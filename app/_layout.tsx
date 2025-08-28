@@ -2,7 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Image, View } from 'react-native';
 import 'react-native-reanimated';
 
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -28,7 +28,13 @@ export default function RootLayout() {
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <Stack
             screenOptions={{
-              headerTitle: 'Flocka',
+              headerTitle: () => (
+                <Image
+                  source={require('../assets/images/flocka-font.png')}
+                  style={{ width: 110, height: 30, resizeMode: 'contain' }}
+                />
+              ),
+              headerTitleAlign: 'center',
               headerStyle: { backgroundColor: "#f8f8f8" },
               headerTintColor: "#333",
               headerTitleStyle: { fontWeight: "bold" },

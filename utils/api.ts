@@ -610,6 +610,17 @@ export class ApiClient {
       throw new Error(response.error || 'Failed to update memo');
     }
   }
+
+  // コレクションから交換記録を削除
+  async deleteExchange(exchangeId: string): Promise<void> {
+    const response = await this.request(`/exchanges/${exchangeId}`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to delete exchange');
+    }
+  }
 }
 
 export const apiClient = new ApiClient();

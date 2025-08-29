@@ -31,6 +31,7 @@ export default function CardDetail() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [memo, setMemo] = useState<string>("");
   const [updating, setUpdating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // データ取得
   useEffect(() => {
@@ -92,6 +93,38 @@ export default function CardDetail() {
     } finally {
       setUpdating(false);
     }
+  };
+
+  // コレクション削除処理
+  const handleDeleteExchange = () => {
+    Alert.alert(
+      'コレクションから削除',
+      'この名刺をコレクションから削除しますか？\nこの操作は取り消せません。',
+      [
+        {
+          text: 'キャンセル',
+          style: 'cancel'
+        },
+        {
+          text: '削除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setDeleting(true);
+              await apiClient.deleteExchange(id!);
+              Alert.alert('削除完了', 'コレクションから削除しました。', [
+                { text: 'OK', onPress: () => router.back() }
+              ]);
+            } catch (err) {
+              console.error('Failed to delete exchange:', err);
+              Alert.alert('エラー', '削除に失敗しました。もう一度お試しください。');
+            } finally {
+              setDeleting(false);
+            }
+          }
+        }
+      ]
+    );
   };
 
   // ローディング中の表示
@@ -175,7 +208,7 @@ export default function CardDetail() {
           📅 {new Date(exchangeData.created_at).toLocaleDateString('ja-JP')}
         </Text>
         {/* メモ */}
-        <Pressable onPress={() => setModalVisible(true)} className="border border-gray-300 p-4 rounded-lg w-full">
+        <Pressable onPress={() => setModalVisible(true)} className="border border-gray-300 p-4 rounded-lg w-full mb-4">
           <View className="flex-row justify-between items-start">
             <View className="flex-1">
               {exchangeData.memo ? (
@@ -186,6 +219,23 @@ export default function CardDetail() {
             </View>
             <MaterialIcons name="edit" size={24} color="gray" />
           </View>
+        </Pressable>
+        
+        {/* 削除ボタン */}
+        <Pressable 
+          onPress={handleDeleteExchange} 
+          className="bg-red-500 p-4 rounded-lg w-full"
+          disabled={deleting}
+          style={{ opacity: deleting ? 0.6 : 1 }}
+        >
+          {deleting ? (
+            <View className="flex-row items-center justify-center">
+              <ActivityIndicator size="small" color="white" />
+              <Text className="text-white font-bold ml-2">削除中...</Text>
+            </View>
+          ) : (
+            <Text className="text-white font-bold text-center">コレクションから削除</Text>
+          )}
         </Pressable>
         {/* モーダル */}
         {modalVisible && (

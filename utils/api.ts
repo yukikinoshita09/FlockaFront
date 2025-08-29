@@ -106,7 +106,7 @@ export class ApiClient {
 
       return data;
     } catch (error) {
-      console.error('API Error:', error);
+      console.log('API Error:', error);
       throw error;
     }
   }
@@ -519,26 +519,51 @@ export class ApiClient {
     total: number;
     newLogs: number;
   }> {
-    const response = await this.request<{
-      logs: {
-        id: string;
-        scannerUser: {
+    try {
+      const response = await this.request<{
+        logs: {
           id: string;
-          name: string;
+          scannerUser: {
+            id: string;
+            name: string;
+          };
+          scannerCard: Card;
+          memo?: string;
+          created_at: string;
+        }[];
+        total: number;
+        newLogs: number;
+      }>('/exchanges/qr-logs');
+      
+      if (response.success && response.data) {
+        return response.data;
+      }
+      
+      // レコードが見つからない場合（404またはnot found）は空のデータを返す
+      if (response.error?.toLowerCase().includes('not found') || 
+          response.error?.includes('404')) {
+        return {
+          logs: [],
+          total: 0,
+          newLogs: 0
         };
-        scannerCard: Card;
-        memo?: string;
-        created_at: string;
-      }[];
-      total: number;
-      newLogs: number;
-    }>('/exchanges/qr-logs');
-    
-    if (response.success && response.data) {
-      return response.data;
+      }
+      
+      // その他のエラーも空のデータを返す（QRログが無いのは正常）
+      return {
+        logs: [],
+        total: 0,
+        newLogs: 0
+      };
+    } catch (error) {
+      // ネットワークエラーなどの場合も空のデータを返す
+      console.warn('QR exchange logs request failed, returning empty data:', error);
+      return {
+        logs: [],
+        total: 0,
+        newLogs: 0
+      };
     }
-    
-    throw new Error(response.error || 'Failed to get QR exchange logs');
   }
 
   // コレクション一覧を取得
@@ -571,6 +596,11 @@ export class ApiClient {
       }));
     }
     
+    // レコードが見つからない場合（404）は空の配列を返す
+    if (response.error?.includes('not found') || response.error?.includes('404')) {
+      return [];
+    }
+    
     throw new Error(response.error || 'Failed to get collection');
   }
 
@@ -595,11 +625,15 @@ export class ApiClient {
       return response.data;
     }
     
+    // レコードが見つからない場合（404）は専用のエラーを投げる
+    if (response.error?.includes('not found') || response.error?.includes('404')) {
+      throw new Error('Exchange record not found');
+    }
+    
     throw new Error(response.error || 'Failed to get exchange detail');
   }
 
   // コレクションのメモを更新
-  // 注意: このエンドポイントは現在404を返す可能性があります
   async updateExchangeMemo(exchangeId: string, memo: string): Promise<void> {
     const response = await this.request(`/exchanges/${exchangeId}`, {
       method: 'PUT',
@@ -607,6 +641,7 @@ export class ApiClient {
     });
     
     if (!response.success) {
+      // レコードが見つからない場合（404）はエラーとして扱う
       throw new Error(response.error || 'Failed to update memo');
     }
   }
@@ -617,7 +652,12 @@ export class ApiClient {
       method: 'DELETE'
     });
     
+    // レコードが見つからない場合（404）は既に削除済みとして成功扱い
     if (!response.success) {
+      // 404エラーの場合は無視（既に削除済み）
+      if (response.error?.includes('not found') || response.error?.includes('404')) {
+        return;
+      }
       throw new Error(response.error || 'Failed to delete exchange');
     }
   }

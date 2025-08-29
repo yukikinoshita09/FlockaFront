@@ -38,9 +38,8 @@ export const useQRExchangeNotifications = () => {
         setNewExchangeLog(latestLog);
         setShowPreview(true);
       }
-    } catch (error) {
-      console.error('Failed to check QR exchange logs:', error);
-      // サイレントエラー - ユーザーには表示しない
+    } catch {
+      // サイレントエラー - QR交換ログは必須機能ではないため、エラーを無視
     } finally {
       setIsChecking(false);
     }

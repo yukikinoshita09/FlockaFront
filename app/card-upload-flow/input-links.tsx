@@ -2,7 +2,7 @@ import { apiClient } from '@/utils/api';
 import Entypo from '@expo/vector-icons/Entypo';
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Alert, Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, TouchableWithoutFeedback, View } from "react-native";
 
 type InputData = {
   sns: string;
@@ -23,19 +23,17 @@ export default function InputLinks() {
   // 名刺の標準サイズ（91mm × 55mm）
   const CARD_ASPECT_RATIO = 91 / 55; // 約1.65:1
 
-  // URL入力のハンドラー - 強制的にhttps://から始まるように
+  // URL入力のハンドラー - 入力中は https:// を強制しない
   const handleLinkChange = (text: string) => {
-    // https://を削除してから入力された場合は再度追加
+    // http:// を https:// に置換するだけ、それ以外はそのまま受け取る
     if (text.startsWith('http://')) {
       setLink('https://' + text.substring(7));
-    } else if (!text.startsWith('https://')) {
-      setLink('https://' + text);
     } else {
       setLink(text);
     }
   };
 
-  // URL初期化時にhttps://を設定
+  // URL初期化時にhttps://を設定（何も入力されていない場合のみ）
   const initializeLink = () => {
     if (link === '') {
       setLink('https://');
@@ -52,19 +50,25 @@ export default function InputLinks() {
       return;
     }
     
-    // https://で始まっているかチェック
-    if (!link.startsWith('https://')) {
-      Alert.alert("URLエラー", "URLはhttps://で始まる必要があります。");
+    // 追加時にスキームがなければ https:// を自動付与する
+    let finalLink = link.trim();
+    if (!finalLink.startsWith('http://') && !finalLink.startsWith('https://')) {
+      finalLink = 'https://' + finalLink;
+    }
+
+    // https:// または http:// で始まっているかチェック
+    if (!finalLink.startsWith('https://') && !finalLink.startsWith('http://')) {
+      Alert.alert("URLエラー", "URLはhttps://またはhttp://で始まる必要があります。");
       return;
     }
     
-    // https://の後に実際のURLがあるかチェック
-    if (link.trim() === 'https://' || link.trim().length <= 8) {
+    // https:// のあとに実際のURLがあるかチェック
+    if (finalLink === 'https://' || finalLink === 'http://' || finalLink.length <= 8) {
       Alert.alert("URLエラー", "有効なURLを入力してください。");
       return;
     }
     
-    const newDatas = [...datas, { sns, link }];
+    const newDatas = [...datas, { sns, link: finalLink }];
     setDatas(newDatas);
     console.log(newDatas);
 
@@ -134,8 +138,26 @@ export default function InputLinks() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      <View className="p-4">
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 20}
+      enabled={true}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <ScrollView 
+          className="flex-1 bg-gray-50" 
+          keyboardShouldPersistTaps="handled" 
+          contentContainerStyle={{ 
+            flexGrow: 1,
+            paddingBottom: Platform.OS === 'ios' ? 20 : 0 
+          }}
+          showsVerticalScrollIndicator={false}
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+          contentInsetAdjustmentBehavior={Platform.OS === 'ios' ? 'automatic' : undefined}
+          automaticallyAdjustKeyboardInsets={Platform.OS === 'ios' ? true : false}
+        >
+          <View className="p-4">
         {/* 名刺プレビュー */}
         <View className="mb-6">
           <Text className="text-lg font-semibold mb-3">名刺プレビュー</Text>
@@ -217,9 +239,9 @@ export default function InputLinks() {
                 <Pressable
                   onPress={handleSetValue}
                   className="p-3 bg-gray-600 rounded-lg items-center"
-                  disabled={!sns.trim() || !link.trim() || !link.startsWith('https://') || link.trim().length <= 8}
+                  disabled={!sns.trim() || !link.trim() || link.trim().length <= 3}
                   style={{
-                    opacity: (!sns.trim() || !link.trim() || !link.startsWith('https://') || link.trim().length <= 8) ? 0.5 : 1
+                    opacity: (!sns.trim() || !link.trim() || link.trim().length <= 3) ? 0.5 : 1
                   }}
                 >
                   <Text className="text-white font-medium">リンクを追加</Text>
@@ -267,5 +289,7 @@ export default function InputLinks() {
         </Pressable>
       </View>
     </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }

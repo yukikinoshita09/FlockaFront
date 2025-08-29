@@ -6,6 +6,7 @@ import {
     ActivityIndicator,
     Alert,
     Image,
+    Keyboard,
     KeyboardAvoidingView,
     Platform,
     SafeAreaView,
@@ -13,6 +14,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     View
 } from 'react-native';
 import { apiClient, Card } from '../utils/api';
@@ -212,8 +214,22 @@ export default function EditCard() {
       <KeyboardAvoidingView 
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 20}
+        enabled={true}
       >
-        <ScrollView className="flex-1">
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <ScrollView 
+            className="flex-1"
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+            contentInsetAdjustmentBehavior={Platform.OS === 'ios' ? 'automatic' : undefined}
+            automaticallyAdjustKeyboardInsets={Platform.OS === 'ios' ? true : false}
+            contentContainerStyle={{ 
+              flexGrow: 1,
+              paddingBottom: Platform.OS === 'ios' ? 20 : 0 
+            }}
+          >
           <View className="p-6">
             {/* 画像選択 */}
             <View className="bg-white rounded-lg p-6 mb-6 border border-gray-100 shadow shadow-gray-200">
@@ -305,7 +321,7 @@ export default function EditCard() {
               ))}
             </View>
           </View>
-        </ScrollView>
+          </ScrollView>
 
         {/* 更新・削除ボタン */}
         <View className="bg-white border-t border-gray-100 px-6 py-6">
@@ -344,6 +360,7 @@ export default function EditCard() {
             </TouchableOpacity>
           </View>
         </View>
+        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

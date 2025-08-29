@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Alert, Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Alert, Image, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, TouchableWithoutFeedback, View } from "react-native";
 
 export default function InputBasicInfo() {
   const { imageUri } = useLocalSearchParams<{ imageUri: string }>();
@@ -28,8 +28,26 @@ export default function InputBasicInfo() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      <View className="p-4">
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 20}
+      enabled={true}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <ScrollView 
+          className="flex-1 bg-gray-50" 
+          keyboardShouldPersistTaps="handled" 
+          contentContainerStyle={{ 
+            flexGrow: 1,
+            paddingBottom: Platform.OS === 'ios' ? 20 : 0 
+          }}
+          showsVerticalScrollIndicator={false}
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+          contentInsetAdjustmentBehavior={Platform.OS === 'ios' ? 'automatic' : undefined}
+          automaticallyAdjustKeyboardInsets={Platform.OS === 'ios' ? true : false}
+        >
+          <View className="p-4">
         {/* 名刺プレビュー */}
         <View className="mb-6">
           <Text className="text-lg font-semibold mb-3">名刺プレビュー</Text>
@@ -119,5 +137,7 @@ export default function InputBasicInfo() {
         </Text>
       )}
     </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }

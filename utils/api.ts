@@ -9,11 +9,6 @@ interface ApiResponse<T = any> {
   message?: string;
 }
 
-interface LoginRequest {
-  email: string;
-  password: string;
-}
-
 interface LoginResponse {
   token: string;
   user: {
@@ -290,6 +285,17 @@ export class ApiClient {
     
     if (!response.success) {
       throw new Error(response.error || 'Failed to delete card');
+    }
+  }
+
+  // コレクションを削除
+  async deleteCollection(cardId: string): Promise<void> {
+    const response = await this.request(`/exchanges/${cardId}`, {
+      method: 'DELETE'
+    });
+
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to delete collection');
     }
   }
 
@@ -635,9 +641,15 @@ export class ApiClient {
 
   // コレクションのメモを更新
   async updateExchangeMemo(exchangeId: string, memo: string): Promise<void> {
+    // memo が undefined の場合、空文字列をデフォルト値として設定
+    const sanitizedMemo = memo ?? '';
+
+    // デバッグ用ログを追加
+    console.log('Updating exchange memo:', { exchangeId, memo: sanitizedMemo });
+
     const response = await this.request(`/exchanges/${exchangeId}`, {
       method: 'PUT',
-      body: JSON.stringify({ memo })
+      body: JSON.stringify({ memo: sanitizedMemo })
     });
     
     if (!response.success) {

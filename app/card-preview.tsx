@@ -142,6 +142,37 @@ export default function CardPreview() {
     );
   };
 
+  // 名刺削除処理
+  const handleDelete = async () => {
+    if (!cardData) {
+      Alert.alert("エラー", "削除する名刺情報が見つかりません。");
+      return;
+    }
+
+    Alert.alert(
+      "名刺を削除",
+      "この名刺をコレクションから削除しますか？",
+      [
+        { text: "キャンセル", style: "cancel" },
+        {
+          text: "削除",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await apiClient.deleteCollection(cardData.cardId);
+              Alert.alert("削除成功", "名刺がコレクションから削除されました。", [
+                { text: "OK", onPress: () => router.replace('/(tabs)/home') }
+              ]);
+            } catch (error) {
+              console.error("Failed to delete card:", error);
+              Alert.alert("削除エラー", "名刺の削除に失敗しました。再度お試しください。");
+            }
+          }
+        }
+      ]
+    );
+  };
+
   // リンクを開く
   const openLink = (url: string) => {
     Linking.openURL(url).catch(err => {
@@ -280,7 +311,7 @@ export default function CardPreview() {
               キャンセル
             </Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             onPress={handleExchange}
             className="flex-1 bg-blue-600 py-4 rounded-lg"
@@ -290,9 +321,18 @@ export default function CardPreview() {
               <ActivityIndicator size="small" color="white" />
             ) : (
               <Text className="text-white text-center font-semibold text-lg">
-                名刺を受け取る
+                交換
               </Text>
             )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleDelete}
+            className="flex-1 bg-red-600 py-4 rounded-lg"
+          >
+            <Text className="text-white text-center font-semibold text-lg">
+              削除
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

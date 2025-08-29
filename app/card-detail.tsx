@@ -113,7 +113,12 @@ export default function CardDetail() {
               setDeleting(true);
               await apiClient.deleteExchange(id!);
               Alert.alert('削除完了', 'コレクションから削除しました。', [
-                { text: 'OK', onPress: () => router.back() }
+                { text: 'OK', onPress: () => {
+                    router.back();
+                    // コレクションページを更新
+                    router.replace('/(tabs)/correction');
+                  }
+                }
               ]);
             } catch (err) {
               console.error('Failed to delete exchange:', err);

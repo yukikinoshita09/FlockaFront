@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -48,7 +48,7 @@ const paginate = (data: CollectionItem[], pageSize: number) => {
   return pages;
 };
 
-export default function PagerScrollView() {
+const PagerScrollView = forwardRef((props, ref) => {
   const [collectionData, setCollectionData] = useState<CollectionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -79,6 +79,10 @@ export default function PagerScrollView() {
       }
     }
   };
+
+  useImperativeHandle(ref, () => ({
+    refreshCollection: () => fetchCollection(true),
+  }));
 
   // プルトゥリフレッシュの処理
   const onRefresh = async () => {
@@ -278,4 +282,8 @@ export default function PagerScrollView() {
       )}
     </View>
   );
-}
+});
+
+PagerScrollView.displayName = "PagerScrollView";
+
+export default PagerScrollView;

@@ -29,10 +29,10 @@ export default function RootLayout() {
             <Stack
             screenOptions={{
               headerTitle: () => (
-              <Image
-                source={require('../assets/images/flocka-font.png')}
-                style={{ width: 110, height: 30, resizeMode: 'contain' }}
-              />
+                <Image
+                  source={require('../assets/images/flocka-font.png')}
+                  style={{ width: 110, height: 30, resizeMode: 'contain', marginTop: 5, marginBottom: 10}}
+                />
               ),
               headerTitleAlign: 'center',
               headerStyle: { backgroundColor: "#f8f8f8" },

@@ -88,7 +88,7 @@ export default function CardPreview() {
       const result = await apiClient.exchangeWithQRCode(
         qrData,
         selectedCardId,
-        memo || "QRコードで交換",
+        memo.trim() || `QRコード交換 (${new Date().toLocaleDateString()})`,
         undefined,
         undefined,
         undefined

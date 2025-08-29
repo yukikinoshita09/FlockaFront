@@ -75,18 +75,20 @@ export default function CardDetail() {
     try {
       setUpdating(true);
       
-      // API エンドポイントが存在しない場合のフォールバック
-      // 一旦ローカル状態のみ更新
+      // APIでメモを更新
+      await apiClient.updateExchangeMemo(id, memo);
+      
+      // ローカル状態も更新
       setExchangeData({
         ...exchangeData,
         memo: memo
       });
       
       setModalVisible(false);
-      Alert.alert('メモ更新', 'メモがローカルに保存されました\n（サーバー同期は今後実装予定）');
+      Alert.alert('成功', 'メモを更新しました。');
     } catch (err) {
       console.error('Failed to update memo:', err);
-      Alert.alert('エラー', 'メモの更新に失敗しました');
+      Alert.alert('エラー', 'メモの更新に失敗しました。もう一度お試しください。');
     } finally {
       setUpdating(false);
     }

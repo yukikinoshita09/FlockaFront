@@ -3,19 +3,19 @@ import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View
+  ActivityIndicator,
+  Alert,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 import { apiClient, Card } from '../utils/api';
 
@@ -180,17 +180,20 @@ export default function EditCard() {
     );
   };
 
+  // 修正: SafeAreaView 内の条件付きレンダリングを整理
   if (loading) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center" style={{ backgroundColor: '#ecebeb' }}>
-        <ActivityIndicator size="large" color="#000000" />
-        <Text className="mt-4 text-xl">カード情報を読み込み中...</Text>
-        <TouchableOpacity 
-          onPress={() => router.back()}
-          className="mt-6 bg-gray-500 px-8 py-4 rounded-lg"
-        >
-          <Text className="text-white font-bold text-lg">戻る</Text>
-        </TouchableOpacity>
+        <>
+          <ActivityIndicator size="large" color="#000000" />
+          <Text className="mt-4 text-xl">カード情報を読み込み中...</Text>
+          <TouchableOpacity 
+            onPress={() => router.back()}
+            className="mt-6 bg-gray-500 px-8 py-4 rounded-lg"
+          >
+            <Text className="text-white font-bold text-lg">戻る</Text>
+          </TouchableOpacity>
+        </>
       </SafeAreaView>
     );
   }
@@ -198,170 +201,178 @@ export default function EditCard() {
   if (!card) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center" style={{ backgroundColor: '#ecebeb' }}>
-        <Text className="text-xl text-red-500 text-center">カード情報の読み込みに失敗しました</Text>
-        <TouchableOpacity 
-          onPress={() => router.back()}
-          className="mt-6 bg-black px-8 py-4 rounded-lg"
-        >
-          <Text className="text-white font-bold text-lg">戻る</Text>
-        </TouchableOpacity>
+        <>
+          <Text className="text-xl text-red-500 text-center">カード情報の読み込みに失敗しました</Text>
+          <TouchableOpacity 
+            onPress={() => router.back()}
+            className="mt-6 bg-black px-8 py-4 rounded-lg"
+          >
+            <Text className="text-white font-bold text-lg">戻る</Text>
+          </TouchableOpacity>
+        </>
       </SafeAreaView>
     );
   }
 
+  // デバッグ用: id の値をログに出力
+  console.log('EditCard: id =', id);
+
+  // 修正: ルート要素を Fragment でラップ
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: '#ecebeb' }}>
-      <KeyboardAvoidingView 
-        className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 20}
-        enabled={true}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <ScrollView 
-            className="flex-1"
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-            keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
-            contentInsetAdjustmentBehavior={Platform.OS === 'ios' ? 'automatic' : undefined}
-            automaticallyAdjustKeyboardInsets={Platform.OS === 'ios' ? true : false}
-            contentContainerStyle={{ 
-              flexGrow: 1,
-              paddingBottom: Platform.OS === 'ios' ? 20 : 0 
-            }}
-          >
-          <View className="p-6">
-            {/* 画像選択 */}
-            <View className="bg-white rounded-lg p-6 mb-6 border border-gray-100 shadow shadow-gray-200">
-              <Text className="text-xl font-bold mb-4">カード画像</Text>
-              <TouchableOpacity
-                onPress={pickImage}
-                className="w-full h-52 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center"
-              >
-                {selectedImage ? (
-                  <Image
-                    source={{ uri: selectedImage }}
-                    className="w-full h-full rounded-lg"
-                    resizeMode="contain"
+    <>
+      <SafeAreaView className="flex-1" style={{ backgroundColor: '#ecebeb' }}>
+        <KeyboardAvoidingView 
+          className="flex-1"
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 20}
+          enabled={true}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <ScrollView 
+              className="flex-1"
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+              contentInsetAdjustmentBehavior={Platform.OS === 'ios' ? 'automatic' : undefined}
+              automaticallyAdjustKeyboardInsets={Platform.OS === 'ios' ? true : false}
+              contentContainerStyle={{ 
+                flexGrow: 1,
+                paddingBottom: Platform.OS === 'ios' ? 20 : 0 
+              }}
+            >
+              <View className="p-6">
+                {/* 画像選択 */}
+                <View className="bg-white rounded-lg p-6 mb-6 border border-gray-100 shadow shadow-gray-200">
+                  <Text className="text-xl font-bold mb-4">カード画像</Text>
+                  <TouchableOpacity
+                    onPress={pickImage}
+                    className="w-full h-52 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center"
+                  >
+                    {selectedImage ? (
+                      <Image
+                        source={{ uri: selectedImage }}
+                        className="w-full h-full rounded-lg"
+                        resizeMode="contain"
+                      />
+                    ) : (
+                      <View className="items-center">
+                        <MaterialIcons name="add-photo-alternate" size={48} color="#9CA3AF" />
+                        <Text className="text-gray-500 mt-2 text-lg">画像を選択</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                {/* カード名 */}
+                <View className="bg-white rounded-lg p-6 mb-6 border border-gray-100 shadow shadow-gray-200">
+                  <Text className="text-xl font-bold mb-4">カード名 *</Text>
+                  <TextInput
+                    value={cardName}
+                    onChangeText={setCardName}
+                    placeholder="カード名を入力"
+                    className="border border-gray-300 rounded-lg p-4 text-lg"
+                    maxLength={50}
                   />
-                ) : (
-                  <View className="items-center">
-                    <MaterialIcons name="add-photo-alternate" size={48} color="#9CA3AF" />
-                    <Text className="text-gray-500 mt-2 text-lg">画像を選択</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
+                  <Text className="text-right text-sm text-gray-500 mt-2">
+                    {cardName.length}/50文字
+                  </Text>
+                </View>
 
-            {/* カード名 */}
-            <View className="bg-white rounded-lg p-6 mb-6 border border-gray-100 shadow shadow-gray-200">
-              <Text className="text-xl font-bold mb-4">カード名 *</Text>
-              <TextInput
-                value={cardName}
-                onChangeText={setCardName}
-                placeholder="カード名を入力"
-                className="border border-gray-300 rounded-lg p-4 text-lg"
-                maxLength={50}
-              />
-              <Text className="text-right text-sm text-gray-500 mt-2">
-                {cardName.length}/50文字
-              </Text>
-            </View>
+                {/* Bio */}
+                <View className="bg-white rounded-lg p-6 mb-6 border border-gray-100 shadow shadow-gray-200">
+                  <Text className="text-xl font-bold mb-4">Bio（任意）</Text>
+                  <TextInput
+                    value={bio}
+                    onChangeText={setBio}
+                    placeholder="自己紹介を入力"
+                    multiline
+                    numberOfLines={4}
+                    className="border border-gray-300 rounded-lg p-4 h-28 text-lg"
+                    textAlignVertical="top"
+                    maxLength={200}
+                  />
+                  <Text className="text-right text-sm text-gray-500 mt-2">
+                    {bio.length}/200文字
+                  </Text>
+                </View>
 
-            {/* Bio */}
-            <View className="bg-white rounded-lg p-6 mb-6 border border-gray-100 shadow shadow-gray-200">
-              <Text className="text-xl font-bold mb-4">Bio（任意）</Text>
-              <TextInput
-                value={bio}
-                onChangeText={setBio}
-                placeholder="自己紹介を入力"
-                multiline
-                numberOfLines={4}
-                className="border border-gray-300 rounded-lg p-4 h-28 text-lg"
-                textAlignVertical="top"
-                maxLength={200}
-              />
-              <Text className="text-right text-sm text-gray-500 mt-2">
-                {bio.length}/200文字
-              </Text>
-            </View>
-
-            {/* リンク */}
-            <View className="bg-white rounded-lg p-6 mb-6 border border-gray-100 shadow shadow-gray-200">
-              <View className="flex-row items-center justify-between mb-4">
-                <Text className="text-xl font-bold">リンク</Text>
-                <TouchableOpacity onPress={addLink} className="bg-black px-4 py-3 rounded-lg">
-                  <Text className="text-white font-bold">追加</Text>
-                </TouchableOpacity>
-              </View>
-              
-              {links && links.map((link, index) => (
-                <View key={index} className="border border-gray-300 rounded-lg p-4 mb-4">
-                  <View className="flex-row items-center justify-between mb-3">
-                    <Text className="text-lg font-bold">リンク {index + 1}</Text>
-                    <TouchableOpacity onPress={() => removeLink(index)}>
-                      <MaterialIcons name="delete" size={24} color="#EF4444" />
+                {/* リンク */}
+                <View className="bg-white rounded-lg p-6 mb-6 border border-gray-100 shadow shadow-gray-200">
+                  <View className="flex-row items-center justify-between mb-4">
+                    <Text className="text-xl font-bold">リンク</Text>
+                    <TouchableOpacity onPress={addLink} className="bg-black px-4 py-3 rounded-lg">
+                      <Text className="text-white font-bold">追加</Text>
                     </TouchableOpacity>
                   </View>
-                  <TextInput
-                    value={link.title}
-                    onChangeText={(text) => updateLink(index, 'title', text)}
-                    placeholder="タイトル (例: Twitter)"
-                    className="border border-gray-300 rounded-lg p-3 mb-3 text-lg"
-                  />
-                  <TextInput
-                    value={link.url}
-                    onChangeText={(text) => updateLink(index, 'url', text)}
-                    placeholder="URL (例: https://twitter.com/username)"
-                    className="border border-gray-300 rounded-lg p-3 text-lg"
-                    keyboardType="url"
-                    autoCapitalize="none"
-                  />
+                  
+                  {links && links.map((link, index) => (
+                    <View key={index} className="border border-gray-300 rounded-lg p-4 mb-4">
+                      <View className="flex-row items-center justify-between mb-3">
+                        <Text className="text-lg font-bold">リンク {index + 1}</Text>
+                        <TouchableOpacity onPress={() => removeLink(index)}>
+                          <MaterialIcons name="delete" size={24} color="#EF4444" />
+                        </TouchableOpacity>
+                      </View>
+                      <TextInput
+                        value={link.title}
+                        onChangeText={(text) => updateLink(index, 'title', text)}
+                        placeholder="タイトル (例: Twitter)"
+                        className="border border-gray-300 rounded-lg p-3 mb-3 text-lg"
+                      />
+                      <TextInput
+                        value={link.url}
+                        onChangeText={(text) => updateLink(index, 'url', text)}
+                        placeholder="URL (例: https://twitter.com/username)"
+                        className="border border-gray-300 rounded-lg p-3 text-lg"
+                        keyboardType="url"
+                        autoCapitalize="none"
+                      />
+                    </View>
+                  ))}
                 </View>
-              ))}
-            </View>
-          </View>
-          </ScrollView>
+              </View>
+            </ScrollView>
 
-        {/* 更新・削除ボタン */}
-        <View className="bg-white border-t border-gray-100 px-6 py-6">
-          <View className="flex-row gap-4">
-            <TouchableOpacity
-              onPress={handleDeleteCard}
-              className="flex-1 bg-red-500 py-4 rounded-lg"
-              disabled={deleting}
-            >
-              {deleting ? (
-                <View className="flex-row items-center justify-center">
-                  <ActivityIndicator size="small" color="white" />
-                  <Text className="text-white font-bold text-xl ml-2">削除中...</Text>
-                </View>
-              ) : (
-                <Text className="text-white text-center font-bold text-xl">
-                  削除
-                </Text>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleUpdateCard}
-              className="flex-1 bg-black py-4 rounded-lg"
-              disabled={updating}
-            >
-              {updating ? (
-                <View className="flex-row items-center justify-center">
-                  <ActivityIndicator size="small" color="white" />
-                  <Text className="text-white font-bold text-xl ml-2">更新中...</Text>
-                </View>
-              ) : (
-                <Text className="text-white text-center font-bold text-xl">
-                  更新
-                </Text>
-              )}
-            </TouchableOpacity>
-          </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+      {/* 更新と削除ボタンを復元 */}
+      <View className="bg-white border-t border-gray-100 px-6 py-6">
+        <View className="flex-row gap-4">
+          <TouchableOpacity
+            onPress={handleDeleteCard}
+            className="flex-1 bg-red-500 py-4 rounded-lg"
+            disabled={deleting}
+          >
+            {deleting ? (
+              <View className="flex-row items-center justify-center">
+                <ActivityIndicator size="small" color="white" />
+                <Text className="text-white font-bold text-xl ml-2">削除中...</Text>
+              </View>
+            ) : (
+              <Text className="text-white text-center font-bold text-xl">
+                削除
+              </Text>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleUpdateCard}
+            className="flex-1 bg-black py-4 rounded-lg"
+            disabled={updating}
+          >
+            {updating ? (
+              <View className="flex-row items-center justify-center">
+                <ActivityIndicator size="small" color="white" />
+                <Text className="text-white font-bold text-xl ml-2">更新中...</Text>
+              </View>
+            ) : (
+              <Text className="text-white text-center font-bold text-xl">
+                更新
+              </Text>
+            )}
+          </TouchableOpacity>
         </View>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      </View>
+    </>
   );
 }

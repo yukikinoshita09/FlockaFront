@@ -37,7 +37,7 @@ interface CollectionItem {
 }
 
 // 2列 x 3行 = 6アイテム/ページ
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 8;
 
 // ページごとに分割
 const paginate = (data: CollectionItem[], pageSize: number) => {
@@ -202,13 +202,13 @@ export default function PagerScrollView() {
           }
 
           return (
-            <View key={pageIndex} className="py-10" style={{ width: screenWidth, flex: 1 }}>
+            <View key={pageIndex} className="py-16" style={{ width: screenWidth, flex: 1 }}>
               <FlatList
                 data={pageWithPlaceholders}
                 keyExtractor={(item, index) => (item ? item.id : `placeholder-${pageIndex}-${index}`)}
                 numColumns={2}
                 scrollEnabled={false} // ページ内はスクロールさせない
-                contentContainerStyle={{ paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center', flexGrow: 1 }}
+                contentContainerStyle={{ paddingHorizontal: 12, alignItems: 'center', justifyContent: 'flex-start', flexGrow: 1 }}
                 columnWrapperStyle={{ justifyContent: 'space-between' }}
                 renderItem={({ item }) => {
                   if (!item) {
@@ -236,7 +236,7 @@ export default function PagerScrollView() {
                         marginHorizontal: 6,
                         borderWidth: 0,
                         backgroundColor: '#fff',
-                        borderRadius: 10,
+                        borderRadius: 4,
                         overflow: 'hidden',
                         // shadow for iOS
                         shadowColor: '#000',

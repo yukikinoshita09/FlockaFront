@@ -337,8 +337,8 @@ export default function Home() {
             {/* アクションボタン */}
             <View className="flex-row gap-8 justify-center">
               {[
-                { icon: <MaterialCommunityIcons name="cellphone-wireless" size={24} color="black" />, label: "近くの人と", onPress: () => console.log('ble') },
-                { icon: <Entypo name="link" size={24} color="black" />, label: "コードを送る", onPress: () => console.log('url') },
+                { icon: <MaterialCommunityIcons name="cellphone-wireless" size={24} color="black" />, label: "近くの人と", onPress: () => console.log('ble'), disabled: true },
+                { icon: <Entypo name="link" size={24} color="black" />, label: "コードを送る", onPress: () => console.log('url'), disabled: true },
                 { icon: <MaterialCommunityIcons name="qrcode-scan" size={24} color="black" />, label: "読み取る", onPress: () => {
                     if (selectedId && selectedId !== "add") {
                       router.push(`/scan-qr?selectedCardId=${selectedId}`);
@@ -352,7 +352,13 @@ export default function Home() {
                   }
                 }
               ].map((btn, index) => (
-                <Pressable key={index} onPress={btn.onPress} className="items-center">
+                <Pressable
+                  key={index}
+                  onPress={btn.onPress}
+                  disabled={!!btn.disabled}
+                  accessibilityState={{ disabled: !!btn.disabled }}
+                  className="items-center"
+                >
                   <View
                     className="bg-white p-4 rounded-full"
                     style={{
@@ -361,11 +367,12 @@ export default function Home() {
                       shadowOpacity: 0.15,                    // 薄め
                       shadowRadius: 3,                         // ぼかし
                       elevation: 4,                            // Android用
+                      opacity: btn.disabled ? 0.5 : 1,
                     }}
                   >
                     {btn.icon}
                   </View>
-                  <Text className="mt-2">{btn.label}</Text>
+                  <Text className="mt-2" style={{ opacity: btn.disabled ? 0.6 : 1 }}>{btn.label}</Text>
                 </Pressable>
               ))}
             </View>

@@ -26,27 +26,27 @@ export default function RootLayout() {
     <View style={{ flex: 1, backgroundColor: '#ecebeb' }}>
       <AuthProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack
+            <Stack
             screenOptions={{
               headerTitle: () => (
-                <Image
-                  source={require('../assets/images/flocka-font.png')}
-                  style={{ width: 110, height: 30, resizeMode: 'contain' }}
-                />
+              <Image
+                source={require('../assets/images/flocka-font.png')}
+                style={{ width: 110, height: 30, resizeMode: 'contain' }}
+              />
               ),
               headerTitleAlign: 'center',
               headerStyle: { backgroundColor: "#f8f8f8" },
               headerTintColor: "#333",
               headerTitleStyle: { fontWeight: "bold" },
             }}
-          >
+            >
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="sign-in" options={{ headerShown: false }} />
             <Stack.Screen name="sign-up" options={{ headerShown: false }} />
             <Stack.Screen name="sign-up-auth" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerLeft: () => null, gestureEnabled: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerLeft: () => null, gestureEnabled: false, title: '' }} />
             <Stack.Screen name="+not-found" />
-          </Stack>
+            </Stack>
           <StatusBar style="auto" />
         </ThemeProvider>
       </AuthProvider>
